@@ -13,7 +13,15 @@
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-W22M866');</script>
+})(window,document,'script','dataLayer','GTM-W22M866');
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
 <!-- End Google Tag Manager -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto%20Sans%20JP:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -7072,18 +7080,188 @@ body.hide-bottom-rule hr:last-of-type{
   margin-bottom:8px;
   color:#0f4a73;
 }
+.color-manager-panel details.cm-details{
+  background:#fff;
+  border:1px solid #d6e3ee;
+  border-radius:14px;
+  padding:0;
+  min-width:220px;
+  flex:1 1 220px;
+  overflow:hidden;
+}
+.color-manager-panel details.cm-details > summary{
+  list-style:none;
+  cursor:pointer;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:#0f4a73;
+  font-weight:700;
+}
+.color-manager-panel details.cm-details > summary::-webkit-details-marker{ display:none; }
+.color-manager-panel details.cm-details > summary::after{
+  content:"＋";
+  font-size:1rem;
+  line-height:1;
+  color:#4d6d86;
+}
+.color-manager-panel details.cm-details[open] > summary::after{ content:"－"; }
+.color-manager-panel .cm-details-body{
+  padding:0 12px 12px;
+}
+.color-manager-panel .cm-details-body > .cm-mini,
+.color-manager-panel .cm-details-body > small,
+.color-manager-panel .cm-details-body > p{
+  margin-top:10px;
+  line-height:1.6;
+}
+.color-manager-panel .cm-panel-body > .cm-row:last-child small{
+  display:block;
+  margin-top:12px;
+  line-height:1.7;
+}
+.color-manager-panel .cm-details-body > button + .cm-mini{
+  margin-top:10px;
+}
+.color-manager-panel .cm-details-body > input[type="range"] + button{
+  margin-top:8px;
+}
+.cm-source-note{
+  margin-top:10px;
+  font-size:.82rem;
+  line-height:1.7;
+  color:#5f7486;
+}
+.cm-source-note a{
+  color:inherit;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.cm-source-note--title{
+  margin-top:12px;
+}
+.cm-source-note--notes{
+  margin-top:12px;
+  margin-bottom:18px;
+}
+/* 印刷フッター引用は通常画面では出さず、印刷時のみ独立表示 */
+.cm-print-footer-citation{
+  display:none !important;
+  margin:0;
+  padding:0;
+  font-size:10px;
+  line-height:1.45;
+  color:#777;
+  text-align:left;
+  page-break-inside:avoid;
+  break-inside:avoid;
+}
+@media print{
+  body.show-footer-citation .cm-print-footer-citation{
+    display:block !important;
+    position:fixed;
+    left:6mm;
+    right:6mm;
+    bottom:4mm;
+    z-index:9999;
+    margin:0;
+    padding:0;
+    font-size:8pt;
+    line-height:1.35;
+    color:#666;
+    text-align:left;
+    background:transparent;
+  }
+}
+
+.color-manager-panel details.cm-panel-fold{
+  border:1px solid #d8e5ef;
+  border-radius:16px;
+  background:#f7fbff;
+  overflow:hidden;
+}
+.color-manager-panel details.cm-panel-fold > summary{
+  list-style:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px;
+}
+.color-manager-panel details.cm-panel-fold > summary::-webkit-details-marker{ display:none; }
+.color-manager-panel details.cm-panel-fold > summary::after{
+  content:"－";
+  font-size:1.1rem;
+  line-height:1;
+  color:#4d6d86;
+}
+.color-manager-panel details.cm-panel-fold:not([open]) > summary::after{ content:"＋"; }
+.color-manager-panel .cm-panel-body{ padding:0 16px 16px; }
 .color-manager-panel .cm-box label{
   display:flex;
   align-items:center;
   gap:8px;
   margin:6px 0;
+  line-height:1.35;
+}
+.color-manager-panel .cm-box label > span,
+.color-manager-panel .cm-size-label,
+.color-manager-panel .cm-section-title{
+  white-space:nowrap;
+}
+.color-manager-panel .cm-paper-label{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:nowrap;
+  white-space:nowrap;
+}
+.color-manager-panel #cmPaperSize{
+  width:auto;
+  min-width:7.2em;
+  max-width:8.2em;
+  flex:0 0 auto;
+}
+.color-manager-panel .cm-row--toolbar{
+  align-items:flex-start;
+}
+.color-manager-panel .cm-row--toolbar button,
+.color-manager-panel .cm-row--toolbar .cm-file-label{
+  align-self:center;
+}
+.color-manager-panel .cm-box label input[type="checkbox"],
+.color-manager-panel .cm-box label input[type="radio"],
+.color-manager-panel .cm-inline-pairs label input[type="checkbox"],
+.color-manager-panel .cm-inline-pairs label input[type="radio"],
+.color-manager-panel .cm-align-row label input[type="radio"]{
+  flex:0 0 auto;
+}
+.color-manager-panel .cm-box label,
+.color-manager-panel .cm-inline-pairs label,
+.color-manager-panel .cm-align-row label{
+  min-height:1.6em;
+}
+.color-manager-panel input[type="checkbox"],
+.color-manager-panel input[type="radio"]{
+  margin:0;
+  vertical-align:middle;
+  position:relative;
+  top:0;
+}
+.color-manager-panel select{
+  line-height:1.35;
 }
 .color-manager-panel .cm-box label:has(input[type="text"]){
   display:block;
 }
 .color-manager-panel .cm-box input[type="range"],
-.color-manager-panel .cm-box input[type="text"]{
+.color-manager-panel .cm-box input[type="text"],
+.color-manager-panel .cm-details-body input[type="range"]{
   width:100%;
+  display:block;
 }
 .color-manager-panel .cm-size-row{
   display:flex;
@@ -7138,10 +7316,39 @@ body.hide-bottom-rule hr:last-of-type{
 .color-manager-panel .is-disabled,
 .color-manager-panel .is-disabled *{
   pointer-events:none !important;
+  user-select:none !important;
 }
 .color-manager-panel .is-disabled input,
 .color-manager-panel .is-disabled button,
 .color-manager-panel .is-disabled select{
+  pointer-events:none !important;
+}
+
+.color-manager-panel.is-share-locked .cm-share-lock-note{
+  display:block;
+}
+.color-manager-panel .cm-share-lock-note{
+  display:none;
+  margin:0 0 12px;
+  padding:10px 12px;
+  border:1px solid #d6e3ee;
+  border-radius:12px;
+  background:#fff;
+  color:#5f7486;
+  font-size:.85rem;
+  line-height:1.6;
+}
+.color-manager-panel.is-share-locked .cm-lock-on-share,
+.color-manager-panel.is-share-locked .cm-lock-on-share *{
+  pointer-events:none !important;
+  user-select:none !important;
+}
+.color-manager-panel.is-share-locked .cm-lock-on-share{
+  opacity:.5;
+}
+.color-manager-panel.is-share-locked .cm-lock-on-share input,
+.color-manager-panel.is-share-locked .cm-lock-on-share button,
+.color-manager-panel.is-share-locked .cm-lock-on-share select{
   pointer-events:none !important;
 }
 
@@ -7260,10 +7467,6 @@ body.hide-bottom-rule hr:last-of-type{
   display:block;
   width:100%;
   margin:24px 0 28px;
-  padding:16px;
-  border:1px solid #d8e5ef;
-  border-radius:16px;
-  background:#f7fbff;
 }
 .color-manager-panel h3{
   margin:0 0 12px;
@@ -7296,6 +7499,12 @@ body.hide-bottom-rule hr:last-of-type{
   padding:10px 12px;
   border-radius:999px;
   cursor:pointer;
+}
+.color-manager-panel .cm-file-label{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  vertical-align:middle;
 }
 .color-manager-panel button:hover,
 .color-manager-panel .cm-file-label:hover{
@@ -7445,7 +7654,7 @@ body.preview-selected-only .article-name a::after{
 }
 .cm-inline-print-option{
   display:flex;
-  align-items:flex-start;
+  align-items:center;
   gap:10px;
 }
 .cm-inline-print-option + .cm-inline-print-option{
@@ -7455,6 +7664,7 @@ body.preview-selected-only .article-name a::after{
 .cm-inline-print-option > .callout{
   margin:0;
   flex:1 1 auto;
+  line-height:1.45;
 }
 .cm-inline-print-option--callout{
   margin-top:10px;
@@ -7462,11 +7672,13 @@ body.preview-selected-only .article-name a::after{
 .cm-inline-check{
   flex:0 0 auto;
   display:inline-flex;
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
   min-width:26px;
-  padding-top:2px;
+  min-height:1.5em;
+  padding-top:0;
   cursor:pointer;
+  line-height:1;
 }
 .cm-inline-check input{
   position:absolute;
@@ -7713,9 +7925,39 @@ body.print-selected-only .cm-note-box.cm-note-box--double{
   }
 }
 
+
+.cm-source{font-size:10px;color:#888;margin-top:4px;}
+@media print{
+  .cm-source{
+    position:fixed;
+    bottom:4mm;
+    left:6mm;
+    font-size:8px;
+    color:#999;
+  }
+}
+.hide-source .cm-source{display:none;}
+.print-only .cm-source{display:none;}
+@media print{
+  .print-only .cm-source{display:block;}
+}
+
+
+/* spacing fix v8 */
+input[type="range"]{margin-bottom:12px;}
+button{margin-top:12px;}
+
 </style>
 <link rel="stylesheet" href="./fontawesome/css/fontawesome-all.min.css">
-<script src="https://unpkg.com/medium-zoom@0/dist/medium-zoom.min.js"></script>
+<script src="https://unpkg.com/medium-zoom@0/dist/medium-zoom.min.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
 <meta property="fb:app_id" content="679887485695454" />
 <meta property="og:title" content="コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト" />
 <meta property="og:type" content="article" /> 
@@ -7730,22 +7972,54 @@ body.print-selected-only .cm-note-box.cm-note-box--double{
 
 <body>
 <!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-122477024-1"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-122477024-1">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
   gtag('config', 'UA-122477024-1');
+
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
 </script>
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-EYGM86MXE5"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EYGM86MXE5">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
   gtag('config', 'G-EYGM86MXE5');
+
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
 </script>
 <div id="fb-root"></div>
 <script>(function(d, s, id) {
@@ -7754,7 +8028,15 @@ body.print-selected-only .cm-note-box.cm-note-box--double{
   js = d.createElement(s); js.id = id;
   js.src = 'https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v2.10&appId=130799517116500';
   fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
+}(document, 'script', 'facebook-jssdk'));
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
 
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W22M866"
@@ -7793,6 +8075,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <section class="page-head">
 <h1>コピックインクカラーリスト 358colors</h1>
+<p class="cm-source-note cm-source-note--title" style="display:none;">引用：<a href="https://gtoo-event.com/hobby2020/iromihon.html" target="_blank" rel="noopener">コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト</a></p>
 </section>
 
 
@@ -7824,6 +8107,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 </div>
+<p class="cm-source-note cm-source-note--notes">引用：<a href="https://gtoo-event.com/hobby2020/iromihon.html" target="_blank" rel="noopener">コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト</a></p>
 <section class="iromihon">
   <h2>BV</h2>
 <div class="app small-full">
@@ -11578,6 +11862,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 </div>
 
+<div class="cm-print-footer-citation">引用：コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト</div>
+
 </section>
 
 
@@ -11593,14 +11879,70 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 
-<script src="./js/vendor/jquery.js"></script>
-<script src="./js/vendor/what-input.js"></script>
-<script src="./js/vendor/foundation.js"></script>
-<script src="./js/jquery.frix.min.js"></script>
-<script src="./js/app.js"></script>
-<script src="./js/jquery.scrollUp.js"></script>
+<script src="./js/vendor/jquery.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
 
-<script src="./js/lightbox.js"></script>
+</script>
+<script src="./js/vendor/what-input.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
+<script src="./js/vendor/foundation.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
+<script src="./js/jquery.frix.min.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
+<script src="./js/app.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
+<script src="./js/jquery.scrollUp.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
+
+<script src="./js/lightbox.js">
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
+</script>
 
 <script>
 (function(){
@@ -11632,7 +11974,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     showNameJa: false,
     titleBold: true,
     groupTitleBold: true,
-    codeBold: false
+    codeBold: false,
+    showCitation: true,
+    citationPrintOnly: false
   };
   const INITIAL_SETTINGS = {};
   const PRESET_STORAGE_KEY = 'copicOwnedSharePresets_v1';
@@ -11704,6 +12048,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const textAlignEl = panel.querySelector('input[name="cmTextAlign"]:checked');
     const showNameEnEl = panel.querySelector('#cmShowNameEn');
     const showNameJaEl = panel.querySelector('#cmShowNameJa');
+    const showCitationEl = panel.querySelector('#cmShowCitation');
+    const citationPrintOnlyEl = panel.querySelector('#cmCitationPrintOnly');
     return {
       fit: fitEl ? fitEl.getAttribute('data-cm-print-fit') : DEFAULT_SETTINGS.fit,
       paper: paperEl ? paperEl.value : DEFAULT_SETTINGS.paper,
@@ -11725,7 +12071,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       multiAutoFonts: multiFontModeEl ? multiFontModeEl.value === 'auto' : DEFAULT_SETTINGS.multiAutoFonts,
       titleBold: titleBoldEl ? titleBoldEl.checked : DEFAULT_SETTINGS.titleBold,
       groupTitleBold: groupTitleBoldEl ? groupTitleBoldEl.checked : DEFAULT_SETTINGS.groupTitleBold,
-      codeBold: codeBoldEl ? codeBoldEl.checked : DEFAULT_SETTINGS.codeBold
+      codeBold: codeBoldEl ? codeBoldEl.checked : DEFAULT_SETTINGS.codeBold,
+      showCitation: showCitationEl ? showCitationEl.checked : DEFAULT_SETTINGS.showCitation,
+      citationPrintOnly: citationPrintOnlyEl ? citationPrintOnlyEl.checked : DEFAULT_SETTINGS.citationPrintOnly
     };
   }
   function getEffectiveSettings(settings){
@@ -11768,11 +12116,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     document.body.classList.toggle('print-paper-a3', s.paper === 'a3');
     document.body.classList.toggle('print-fit-one-page', s.fit === 'one');
     document.body.classList.toggle('print-fit-multi-page', s.fit !== 'one');
+    document.body.classList.toggle('show-citation-screen', !!s.showCitation);
+    document.body.classList.toggle('show-footer-citation', !!s.citationPrintOnly);
     const pageH1 = document.querySelector('.page-head h1');
     if(pageH1 && originalH1Text){
       pageH1.textContent = originalH1Text;
     }
     updateDynamicPageStyle(s);
+    updateCitationPlacement(s);
     updateSizeLabels(s);
     updateMultiColumnsControlState(s);
     updateMultiColumnsControlState(s);
@@ -11809,8 +12160,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(nameModeEl) nameModeEl.value = s.nameMode || 'en';
     const showNameEnEl = panel.querySelector('#cmShowNameEn');
     const showNameJaEl = panel.querySelector('#cmShowNameJa');
+    const showCitationEl = panel.querySelector('#cmShowCitation');
+    const citationPrintOnlyEl = panel.querySelector('#cmCitationPrintOnly');
     if(showNameEnEl) showNameEnEl.checked = !!s.showNameEn;
     if(showNameJaEl) showNameJaEl.checked = !!s.showNameJa;
+    if(showCitationEl) showCitationEl.checked = !!s.showCitation;
+    if(citationPrintOnlyEl) citationPrintOnlyEl.checked = !!s.citationPrintOnly;
     panel.querySelectorAll('input[name="cmTextAlign"]').forEach(function(el){ el.checked = el.value === (s.textAlign || 'center'); });
     const titleSizeEl = panel.querySelector('#cmTitleSize');
     if(titleSizeEl) titleSizeEl.value = String(s.titleSize);
@@ -11876,8 +12231,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(cb) cb.checked = !!DEFAULT_SETTINGS.codeBold;
       const fresh = readSettingsFromPanel();
       applySettings(fresh);
+// hard lock UI
+panel.querySelectorAll('#cmGroupTitleSize,#cmCodeSize,#cmNameSize,#cmTitleSize,#cmLineGap,#cmTitleGap,#cmGroupGap,#cmCodeNameGap')
+.forEach(el=>{ el.disabled=true; el.style.pointerEvents='none'; });
+panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
+.forEach(el=>{ el.disabled=true; });
     }else{
       applySettings(s);
+// unlock UI
+panel.querySelectorAll('#cmGroupTitleSize,#cmCodeSize,#cmNameSize,#cmTitleSize,#cmLineGap,#cmTitleGap,#cmGroupGap,#cmCodeNameGap')
+.forEach(el=>{ el.disabled=false; el.style.pointerEvents='auto'; });
+panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
+.forEach(el=>{ el.disabled=false; });
     }
     applyPrintVisibility();
   }
@@ -11911,12 +12276,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     params.set('titleBold', s.titleBold ? '1' : '0');
     params.set('groupTitleBold', s.groupTitleBold ? '1' : '0');
     params.set('codeBold', s.codeBold ? '1' : '0');
+    params.set('citation', s.showCitation ? '1' : '0');
+    params.set('citationPrintOnly', s.citationPrintOnly ? '1' : '0');
     const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); });
     if(enabled.length) params.set('text', enabled.join(','));
     return location.origin + location.pathname + '?' + params.toString();
   }
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
+    isShareLocked = params.toString().length > 0;
     const colors = params.get('colors');
     if(colors){
       owned.clear();
@@ -11945,7 +12313,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       multiAutoFonts: params.get('multiAutoFonts') === null ? DEFAULT_SETTINGS.multiAutoFonts : params.get('multiAutoFonts') !== '0',
       titleBold: params.get('titleBold') === null ? DEFAULT_SETTINGS.titleBold : params.get('titleBold') !== '0',
       groupTitleBold: params.get('groupTitleBold') === null ? DEFAULT_SETTINGS.groupTitleBold : params.get('groupTitleBold') !== '0',
-      codeBold: params.get('codeBold') === null ? DEFAULT_SETTINGS.codeBold : params.get('codeBold') !== '0'
+      codeBold: params.get('codeBold') === null ? DEFAULT_SETTINGS.codeBold : params.get('codeBold') !== '0',
+      showCitation: params.get('citation') === null ? DEFAULT_SETTINGS.showCitation : params.get('citation') !== '0',
+      citationPrintOnly: params.get('citationPrintOnly') === null ? DEFAULT_SETTINGS.citationPrintOnly : params.get('citationPrintOnly') !== '0'
     };
     syncPanelFromSettings(settings);
     applySettings(settings);
@@ -12008,7 +12378,7 @@ function updateMultiColumnsControlState(settings){
     const nameSizeWrap = panel.querySelector('#cmNameSizeWrap');
     const codeNameGapWrap = panel.querySelector('#cmCodeNameGapWrap');
     if(nameLangWrap) nameLangWrap.classList.toggle('is-disabled', namesDisabled);
-    if(textAlignWrap) textAlignWrap.classList.toggle('is-disabled', autoFonts);
+    if(textAlignWrap) textAlignWrap.classList.remove('is-disabled');
     if(nameSizeWrap) nameSizeWrap.classList.toggle('is-disabled', namesDisabled || autoFonts);
     if(codeNameGapWrap) codeNameGapWrap.classList.toggle('is-disabled', namesDisabled || autoFonts);
 
@@ -12017,8 +12387,8 @@ function updateMultiColumnsControlState(settings){
       el.tabIndex = namesDisabled ? -1 : 0;
     });
     panel.querySelectorAll('input[name="cmTextAlign"]').forEach(function(el){
-      el.disabled = autoFonts;
-      el.tabIndex = autoFonts ? -1 : 0;
+      el.disabled = false;
+      el.tabIndex = 0;
     });
     panel.querySelectorAll('#cmNameSize,#cmCodeNameGap').forEach(function(el){
       const off = namesDisabled || autoFonts;
@@ -12108,129 +12478,154 @@ function updateMultiColumnsControlState(settings){
       renderPresetList();
     }
   }
+  let isShareLocked = false;
   function createPanel(){
     const calloutWrap = document.querySelector('.cm-inline-print-option--callout');
     if(!calloutWrap) return;
     panel = document.createElement('section');
     panel.className = 'color-manager-panel';
     panel.innerHTML = [
-      '<h3>所持カラー管理</h3>',
-      '<p class="cm-subtitle">印刷・共有・文字サイズをこの中でまとめて調整できます。</p>',
-      '<div class="cm-row">',
-        '<span class="cm-status">選択中 <strong id="cmOwnedCount">0</strong> / <strong id="cmTotalCount">0</strong> colors</span>',
-      '</div>',
-      '<div class="cm-row">',
-        '<button type="button" data-cm="all-on">全色チェック</button>',
-        '<button type="button" data-cm="all-off">全色外す</button>',
-        '<button type="button" data-cm="preview-selected">選択色プレビュー</button>',
-        '<button type="button" data-cm="preview-reset">通常表示に戻す</button>',
-        '<button type="button" data-cm="print-selected">選択色だけ印刷</button>',
-        '<button type="button" data-cm="copy-share-url">共有URLをコピー</button>',
-        '<label class="cm-file-label">JSON読み込み<input class="cm-file" type="file" accept="application/json,.json"></label>',
-        '<button type="button" data-cm="download-file">JSON保存</button>',
-      '</div>',
-      '<div class="cm-row">',
-        '<button type="button" data-cm="text-all-on">文字チェック全部つける</button>',
-        '<button type="button" data-cm="text-all-off">文字チェック全部外す</button>',
-      '</div>',
-      '<div class="cm-stack">',
-        '<div class="cm-box">',
-          '<strong>印刷レイアウト</strong>',
-          '<label><input type="radio" name="cmPrintFit" data-cm-print-fit="one" checked> 1ページにまとめる</label>',
-          '<label><input type="radio" name="cmPrintFit" data-cm-print-fit="multi"> 複数ページで表示</label>',
-          '<label>用紙サイズ',
-            '<select id="cmPaperSize">',
-              '<option value="a4">A4縦</option>',
-              '<option value="a3">A3横</option>',
-            '</select>',
-          '</label>',
-          '<div class="cm-size-row cm-size-wrap" id="cmMultiColumnsWrap">',
-            '<span class="cm-size-label">1列の個数</span>',
-            '<span class="cm-value" id="cmMultiColumnsValue">5個</span>',
+      '<details class="cm-panel-fold" open>',
+        '<summary>',
+          '<div>',
+            '<h3>所持カラー管理</h3>',
+            '<p class="cm-subtitle">印刷・共有・文字サイズをこの中でまとめて調整できます。</p>',
           '</div>',
-          '<input type="range" id="cmMultiColumns" min="3" max="20" step="1" value="5">',
-          '<div class="cm-mini" id="cmMultiColumnsMini">複数ページで印刷する時、1列に並べる色数を 3〜20個で調整できます。</div>',
-          '<div class="cm-inline-pairs" id="cmMultiFontModeWrap">',
-            '<label><input type="radio" name="cmMultiFontMode" value="auto" checked> おまかせ</label>',
-            '<label><input type="radio" name="cmMultiFontMode" value="manual"> 自分で調整</label>',
+        '</summary>',
+        '<div class="cm-panel-body">',
+          '<div class="cm-row">',
+            '<span class="cm-status">選択中 <strong id="cmOwnedCount">0</strong> / <strong id="cmTotalCount">0</strong> colors</span>',
           '</div>',
-          '<div class="cm-mini" id="cmFontModeMini">1ページにまとめる / 複数ページで表示 のどちらでも、おまかせ・自分で調整を選べます。</div>',
+          '<div class="cm-row cm-row--toolbar">',
+            '<button type="button" data-cm="all-on">全色チェック</button>',
+            '<button type="button" data-cm="all-off">全色外す</button>',
+            '<button type="button" data-cm="preview-selected">選択色プレビュー</button>',
+            '<button type="button" data-cm="preview-reset">通常表示に戻す</button>',
+            '<button type="button" data-cm="print-selected">選択色だけ印刷</button>',
+            '<button type="button" data-cm="copy-share-url" class="cm-preview-hide">共有URLをコピー</button>',
+            '<button type="button" data-cm="load-file" class="cm-preview-hide">JSON読み込み</button><input class="cm-file" type="file" accept="application/json,.json" hidden>',
+            '<button type="button" data-cm="download-file" class="cm-preview-hide">JSON保存</button>',
+          '</div>',
+          '<div class="cm-row cm-preview-hide-row">',
+            '<button type="button" data-cm="text-all-on">文字チェック全部つける</button>',
+            '<button type="button" data-cm="text-all-off">文字チェック全部外す</button>',
+          '</div>',
+          '<div class="cm-share-lock-note">共有URLで開いているため、この設定欄は固定表示です。</div><div class="cm-stack cm-lock-on-share">',
+            '<details class="cm-details cm-preview-hide-panel" open>',
+              '<summary>印刷レイアウト</summary>',
+              '<div class="cm-details-body">',
+                '<label><input type="radio" name="cmPrintFit" data-cm-print-fit="one" checked> 1ページにまとめる</label>',
+                '<label><input type="radio" name="cmPrintFit" data-cm-print-fit="multi"> 複数ページで表示</label>',
+                '<label class="cm-paper-label"><span>用紙サイズ</span>',
+                  '<select id="cmPaperSize">',
+                    '<option value="a4">A4縦</option>',
+                    '<option value="a3">A3横</option>',
+                  '</select>',
+                '</label>',
+                '<div class="cm-size-row cm-size-wrap" id="cmMultiColumnsWrap">',
+                  '<span class="cm-size-label">1列の個数</span>',
+                  '<span class="cm-value" id="cmMultiColumnsValue">5個</span>',
+                '</div>',
+                '<input type="range" id="cmMultiColumns" min="3" max="20" step="1" value="5">',
+                '<div class="cm-mini" id="cmMultiColumnsMini">複数ページで印刷する時、1列に並べる色数を 3〜20個で調整できます。</div>',
+                '<div class="cm-inline-pairs" id="cmMultiFontModeWrap">',
+                  '<label><input type="radio" name="cmMultiFontMode" value="auto" checked> おまかせ</label>',
+                  '<label><input type="radio" name="cmMultiFontMode" value="manual"> 自分で調整</label>',
+                '</div>',
+                '<div class="cm-mini" id="cmFontModeMini">1ページにまとめる / 複数ページで表示 のどちらでも、おまかせ・自分で調整を選べます。</div>',
+              '</div>',
+            '</details>',
+            '<details class="cm-details cm-preview-hide-panel" open>',
+              '<summary>共有URL保存</summary>',
+              '<div class="cm-details-body">',
+                '<div class="cm-preset-row">',
+                  '<input type="text" id="cmPresetName" placeholder="保存名（例：ワークショップ用）" maxlength="30">',
+                  '<button type="button" data-cm="preset-save">今のURLを保存</button>',
+                '</div>',
+                '<div class="cm-preset-list" id="cmPresetList"></div>',
+              '</div>',
+            '</details>',
+            '<details class="cm-details cm-preview-hide-panel" open>',
+              '<summary>表示</summary>',
+              '<div class="cm-details-body">',
+                '<label><input type="checkbox" id="cmToggleNames"> 色名を表示</label>',
+                '<div class="cm-inline-pairs" id="cmNameLangWrap">',
+                  '<label><input type="checkbox" id="cmShowNameEn" checked> 英語表記</label>',
+                  '<label><input type="checkbox" id="cmShowNameJa"> 日本語表記</label>',
+                '</div>',
+                '<div class="cm-align-row" id="cmTextAlignWrap">',
+                  '<label><input type="radio" name="cmTextAlign" value="center" checked> 中央揃え</label>',
+                  '<label><input type="radio" name="cmTextAlign" value="left"> 左揃え</label>',
+                '</div>',
+                '<label><input type="checkbox" id="cmShowCitation" checked> 引用表示ON/OFF</label>',
+                '<label><input type="checkbox" id="cmCitationPrintOnly"> フッターに表示 / 非表示</label>',
+                '<div class="cm-mini">英語と日本語は両方同時に表示できます。引用表示ON/OFF は枠下の引用表示、フッターに表示 / 非表示 は印刷時のフッター表示だけに反映します。</div>',
+              '</div>',
+            '</details>',
+            '<details class="cm-details cm-preview-hide-panel" open>',
+              '<summary>文字サイズ</summary>',
+              '<div class="cm-details-body">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">タイトル</span>',
+                  '<span class="cm-value" id="cmTitleSizeValue">36px</span>',
+                  '<label><input type="checkbox" id="cmTitleBold" checked> タイトルを太字</label>',
+                '</div>',
+                '<input type="range" id="cmTitleSize" class="cm-font-control" min="12" max="56" step="1" value="36">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">色タイトル</span>',
+                  '<span class="cm-value" id="cmGroupTitleSizeValue">32px</span>',
+                  '<label><input type="checkbox" id="cmGroupTitleBold" checked> 色タイトルを太字</label>',
+                '</div>',
+                '<input type="range" id="cmGroupTitleSize" min="12" max="72" step="1" value="32">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">色番号</span>',
+                  '<span class="cm-value" id="cmCodeSizeValue">16px</span>',
+                  '<label><input type="checkbox" id="cmCodeBold"> 色番号を太字</label>',
+                '</div>',
+                '<input type="range" id="cmCodeSize" min="6" max="24" step="1" value="16">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">色名</span>',
+                  '<span class="cm-value" id="cmNameSizeValue">13px</span>',
+                '</div>',
+                '<input type="range" id="cmNameSize" class="cm-font-control" min="6" max="24" step="1" value="13">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">行間</span>',
+                  '<span class="cm-value" id="cmLineGapValue">108%</span>',
+                '</div>',
+                '<input type="range" id="cmLineGap" class="cm-font-control" min="30" max="150" step="1" value="108">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">タイトルと色タイトルの間</span>',
+                  '<span class="cm-value" id="cmTitleGapValue">24px</span>',
+                '</div>',
+                '<input type="range" id="cmTitleGap" class="cm-font-control" min="0" max="48" step="1" value="24">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">色タイトルと色見本の間</span>',
+                  '<span class="cm-value" id="cmGroupGapValue">14px</span>',
+                '</div>',
+                '<input type="range" id="cmGroupGap" class="cm-font-control" min="0" max="40" step="1" value="14">',
+                '<div class="cm-size-row">',
+                  '<span class="cm-size-label">色番号と色名の間</span>',
+                  '<span class="cm-value" id="cmCodeNameGapValue">2px</span>',
+                '</div>',
+                '<input type="range" id="cmCodeNameGap" class="cm-font-control" min="0" max="20" step="1" value="2">',
+                '<button type="button" data-cm="reset-font-sizes">文字サイズをデフォルトに戻す</button>',
+                '<div class="cm-mini">おまかせ の時は文字サイズ・行間・余白調整をグレー表示します。自分で調整 にすると手動値を使います。</div>',
+              '</div>',
+            '</details>',
+          '</div>',
+          '<div class="cm-row"><small>カードを押すと所持カラーを囲みます。各見出しの横でもシリーズごとに一括チェックできます。共有URLを送ると、その人の画面でも同じ選択状態を再現できます。</small></div>',
         '</div>',
-        '<div class="cm-box">',
-          '<strong>共有URL保存</strong>',
-          '<div class="cm-preset-row">',
-            '<input type="text" id="cmPresetName" placeholder="保存名（例：ワークショップ用）" maxlength="30">',
-            '<button type="button" data-cm="preset-save">今のURLを保存</button>',
-          '</div>',
-          '<div class="cm-preset-list" id="cmPresetList"></div>',
-        '</div>',
-        '<div class="cm-box">',
-          '<strong>表示</strong>',
-          '<label><input type="checkbox" id="cmToggleNames"> 色名を表示</label>',
-          '<div class="cm-inline-pairs" id="cmNameLangWrap">',
-            '<label><input type="checkbox" id="cmShowNameEn" checked> 英語表記</label>',
-            '<label><input type="checkbox" id="cmShowNameJa"> 日本語表記</label>',
-          '</div>',
-          '<div class="cm-align-row" id="cmTextAlignWrap">',
-            '<label><input type="radio" name="cmTextAlign" value="center" checked> 中央揃え</label>',
-            '<label><input type="radio" name="cmTextAlign" value="left"> 左揃え</label>',
-          '</div>',
-          '<div class="cm-mini">英語と日本語は両方同時に表示できます。印刷レイアウトにも反映します。</div>',
-        '</div>',
-        '<div class="cm-box">',
-          '<strong>文字サイズ</strong>',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">タイトル</span>',
-            '<span class="cm-value" id="cmTitleSizeValue">36px</span>',
-            '<label><input type="checkbox" id="cmTitleBold" checked> タイトルを太字</label>',
-          '</div>',
-          '<input type="range" id="cmTitleSize" class="cm-font-control" min="12" max="56" step="1" value="36">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">色タイトル</span>',
-            '<span class="cm-value" id="cmGroupTitleSizeValue">32px</span>',
-            '<label><input type="checkbox" id="cmGroupTitleBold" checked> 色タイトルを太字</label>',
-          '</div>',
-          '<input type="range" id="cmGroupTitleSize" min="12" max="72" step="1" value="32">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">色番号</span>',
-            '<span class="cm-value" id="cmCodeSizeValue">16px</span>',
-            '<label><input type="checkbox" id="cmCodeBold"> 色番号を太字</label>',
-          '</div>',
-          '<input type="range" id="cmCodeSize" min="6" max="24" step="1" value="16">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">色名</span>',
-            '<span class="cm-value" id="cmNameSizeValue">13px</span>',
-          '</div>',
-          '<input type="range" id="cmNameSize" class="cm-font-control" min="6" max="24" step="1" value="13">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">行間</span>',
-            '<span class="cm-value" id="cmLineGapValue">108%</span>',
-          '</div>',
-          '<input type="range" id="cmLineGap" class="cm-font-control" min="30" max="150" step="1" value="108">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">タイトルと色タイトルの間</span>',
-            '<span class="cm-value" id="cmTitleGapValue">24px</span>',
-          '</div>',
-          '<input type="range" id="cmTitleGap" class="cm-font-control" min="0" max="48" step="1" value="24">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">色タイトルと色見本の間</span>',
-            '<span class="cm-value" id="cmGroupGapValue">14px</span>',
-          '</div>',
-          '<input type="range" id="cmGroupGap" class="cm-font-control" min="0" max="40" step="1" value="14">',
-          '<div class="cm-size-row">',
-            '<span class="cm-size-label">色番号と色名の間</span>',
-            '<span class="cm-value" id="cmCodeNameGapValue">2px</span>',
-          '</div>',
-          '<input type="range" id="cmCodeNameGap" class="cm-font-control" min="0" max="20" step="1" value="2">',
-          '<button type="button" data-cm="reset-font-sizes">文字サイズをデフォルトに戻す</button>',
-          '<div class="cm-mini">おまかせ の時は文字サイズ・行間・余白調整をグレー表示します。自分で調整 にすると手動値を使います。</div>',
-        '</div>',
-      '</div>',
-      '<div class="cm-row"><small>カードを押すと所持カラーを囲みます。各見出しの横でもシリーズごとに一括チェックできます。共有URLを送ると、その人の画面でも同じ選択状態を再現できます。</small></div>'
-    ].join('');;
-    calloutWrap.insertAdjacentElement('afterend', panel);
+      '</details>'
+    ].join('');
+    const notesNote = document.querySelector('.cm-source-note--notes');
+    if(notesNote){
+      notesNote.insertAdjacentElement('afterend', panel);
+    }else{
+      calloutWrap.insertAdjacentElement('afterend', panel);
+    }
     statusEl = panel.querySelector('#cmOwnedCount');
     panel.querySelector('#cmTotalCount').textContent = String(cards.length);
+    if(isShareLocked) panel.classList.add('is-share-locked');
 
     document.querySelectorAll('[data-cm-print]').forEach(function(chk){
       chk.addEventListener('change', function(e){
@@ -12249,6 +12644,8 @@ function updateMultiColumnsControlState(settings){
     const showNamesEl = panel.querySelector('#cmToggleNames');
     const showNameEnEl = panel.querySelector('#cmShowNameEn');
     const showNameJaEl = panel.querySelector('#cmShowNameJa');
+    const showCitationEl = panel.querySelector('#cmShowCitation');
+    const citationPrintOnlyEl = panel.querySelector('#cmCitationPrintOnly');
     const titleSizeEl = panel.querySelector('#cmTitleSize');
     const groupTitleSizeEl = panel.querySelector('#cmGroupTitleSize');
     const codeSizeEl = panel.querySelector('#cmCodeSize');
@@ -12263,7 +12660,7 @@ function updateMultiColumnsControlState(settings){
     const codeBoldEl = panel.querySelector('#cmCodeBold');
     const multiFontModeEls = panel.querySelectorAll('input[name="cmMultiFontMode"]');
     const textAlignEls = panel.querySelectorAll('input[name="cmTextAlign"]');
-    [paperEl, showNamesEl, showNameEnEl, showNameJaEl, titleBoldEl, groupTitleBoldEl, codeBoldEl].forEach(function(el){ if(el) el.addEventListener('change', refreshSettings); });
+    [paperEl, showNamesEl, showNameEnEl, showNameJaEl, showCitationEl, citationPrintOnlyEl, titleBoldEl, groupTitleBoldEl, codeBoldEl].forEach(function(el){ if(el) el.addEventListener('change', refreshSettings); });
     multiFontModeEls.forEach(function(el){ el.addEventListener('change', refreshSettings); });
     textAlignEls.forEach(function(el){ el.addEventListener('change', refreshSettings); });
     [titleSizeEl, groupTitleSizeEl, codeSizeEl, nameSizeEl, lineGapEl, titleGapEl, groupGapEl, codeNameGapEl, multiColsEl].forEach(function(el){ if(el) el.addEventListener('input', refreshSettings); });
@@ -12291,6 +12688,7 @@ function updateMultiColumnsControlState(settings){
     panel.addEventListener('click', function(e){
       const btn = e.target.closest('button[data-cm]');
       if(!btn) return;
+      if(isShareLocked && btn.closest('.cm-lock-on-share')) return;
       const action = btn.getAttribute('data-cm');
       if(action === 'all-on'){
         cards.forEach(card => owned.add(card.dataset.code));
@@ -12327,6 +12725,9 @@ function updateMultiColumnsControlState(settings){
         applyPrintVisibility();
         refreshGroups();
         updateHeading();
+      }else if(action === 'load-file'){
+        const fileInput = panel.querySelector('.cm-file');
+        if(fileInput) fileInput.click();
       }else if(action === 'download-file'){
         const blob = new Blob([JSON.stringify(makeExportData(), null, 2)], {type:'application/json'});
         const a = document.createElement('a');
@@ -12360,6 +12761,7 @@ function updateMultiColumnsControlState(settings){
     });
 
     panel.querySelector('.cm-file').addEventListener('change', function(e){
+      if(isShareLocked) return;
       const file = e.target.files && e.target.files[0];
       if(!file) return;
       const reader = new FileReader();
@@ -12370,6 +12772,27 @@ function updateMultiColumnsControlState(settings){
 
     buildInlineGroupControls();
   }
+  function updateCitationPlacement(settings){
+    const s = settings || readSettingsFromPanel();
+    const titleNote = document.querySelector('.cm-source-note--title');
+    const notesNote = document.querySelector('.cm-source-note--notes');
+    const footerNote = document.querySelector('.cm-print-footer-citation');
+    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
+    const hasNoteRows = ['paper-type','ink-ratio'].some(function(key){ return enabled.has(key); });
+    const showOnScreen = !!s.showCitation;
+    const showFooter = !!s.citationPrintOnly;
+
+    if(titleNote){
+      titleNote.style.display = showOnScreen && !hasNoteRows ? '' : 'none';
+    }
+    if(notesNote){
+      notesNote.style.display = showOnScreen && hasNoteRows ? '' : 'none';
+    }
+    if(footerNote){
+      footerNote.style.display = showFooter ? 'block' : 'none';
+    }
+  }
+
   function updateNoteBoxState(){
     const noteBox = document.querySelector('.cm-note-box');
     if(!noteBox) return;
@@ -12399,6 +12822,7 @@ function updateMultiColumnsControlState(settings){
       row.classList.toggle('is-off', previewOrPrint && !isOn);
     });
     updateNoteBoxState();
+    updateCitationPlacement();
   }
   function applyPrintFit(){
     refreshSettings();
@@ -12586,6 +13010,14 @@ function updateMultiColumnsControlState(settings){
     refreshUI();
   });
 })();
+
+document.getElementById('cmShowSource')?.addEventListener('change',e=>{
+  document.body.classList.toggle('hide-source', !e.target.checked);
+});
+document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
+  document.body.classList.toggle('print-only', e.target.checked);
+});
+
 </script>
 
 </body>
