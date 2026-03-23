@@ -8068,6 +8068,21 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 }
 </style>
 
+
+<style id="cm-hide-count-fix">
+/* プレビューモードで色タイトル横の数字非表示 */
+body.preview-selected-only .cm-group-count{
+  display:none !important;
+}
+
+/* 印刷時も非表示 */
+@media print{
+  .cm-group-count{
+    display:none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
