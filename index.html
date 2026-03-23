@@ -8083,6 +8083,38 @@ body.preview-selected-only .cm-group-count{
 }
 </style>
 
+
+<style id="cm-mobile-cleanup-fix">
+/* スマホでは不要な上部メニュー・ヘッダー画像を非表示 */
+@media screen and (max-width: 768px){
+  header,
+  .site-header,
+  .top-bar,
+  .title-bar,
+  .menu,
+  .menu-icon,
+  .header-logo,
+  .logo,
+  .sp-nav,
+  .pc-nav,
+  .global-nav,
+  .nav-toggle,
+  .hamburger,
+  [class*="menu"],
+  [class*="nav"],
+  [class*="header"] img,
+  header img{
+    display:none !important;
+  }
+
+  /* 余白が残るのも詰める */
+  body{
+    padding-top:0 !important;
+    margin-top:0 !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -13371,6 +13403,33 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     document.addEventListener('DOMContentLoaded', initCmCustomZoom, {once:true});
   }else{
     initCmCustomZoom();
+  }
+})();
+</script>
+
+
+<script id="cm-mobile-cleanup-script">
+(function(){
+  function hideBrokenImages(root){
+    (root || document).querySelectorAll('img').forEach(function(img){
+      function mark(){
+        if(!img.naturalWidth || img.naturalWidth === 0){
+          img.style.display = 'none';
+        }
+      }
+      if(img.complete){
+        mark();
+      }else{
+        img.addEventListener('error', function(){ img.style.display = 'none'; }, {once:true});
+        img.addEventListener('load', mark, {once:true});
+      }
+    });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ hideBrokenImages(document); }, {once:true});
+  }else{
+    hideBrokenImages(document);
   }
 })();
 </script>
