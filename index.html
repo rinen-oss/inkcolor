@@ -7029,6 +7029,22 @@ body.lb-disable-scrolling {
 
 
 
+
+/* group selected count */
+.iromihon h2 .cm-group-count{
+  display:inline-block;
+  margin-left:.18em;
+  font-size:.52em;
+  font-weight:400;
+  color:#6f7f95;
+  vertical-align:baseline;
+  position:relative;
+  top:.28em;
+  line-height:1;
+}
+.iromihon h2 .cm-group-count.is-zero{
+  opacity:.45;
+}
 /* ===== owned color manager ===== */
 :root{
   --cm-title-size:36px;
@@ -7968,32 +7984,6 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 <meta name="twitter:site" content="@IC_korisu" />
 <meta name="twitter:title" content="コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト">
 <meta name="twitter:description" content="コピックインクのカラーラインナップは全358色。 1色でもアルコールインクアートならではの濃淡をお楽...">
-
-<style>
-
-</style>
-
-
-<style id="cm-series-count-fix">
-.iromihon h2 .cm-series-code{
-  display:inline-block;
-}
-.iromihon h2 .color-count{
-  display:inline-block;
-  font-size:10pt !important;
-  font-weight:400 !important;
-  color:#888 !important;
-  letter-spacing:0 !important;
-  margin-left:0 !important;
-  position:relative;
-  top:1px;
-}
-body.preview-selected-only .iromihon h2 .color-count,
-body.print-selected-only .iromihon h2 .color-count{
-  display:none !important;
-}
-</style>
-
 </head>
 
 <body>
@@ -12006,19 +11996,6 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
   };
   const INITIAL_SETTINGS = {};
   const PRESET_STORAGE_KEY = 'copicOwnedSharePresets_v1';
-  function getShareParams(){
-    return new URLSearchParams(location.search);
-  }
-  function getEnabledPrintKeys(){
-    if(isShareLocked){
-      const params = getShareParams();
-      if(params.has('text')){
-        const raw = params.get('text') || '';
-        return new Set(raw.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
-      }
-    }
-    return new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }).filter(Boolean));
-  }
 
   function setCookie(name, value, days){
     const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
@@ -12289,77 +12266,47 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     document.querySelectorAll('[data-cm-print]').forEach(function(el){ el.checked = checked; });
     applyPrintVisibility();
   }
-  function buildShareSnapshot(){
-    const s = readSettingsFromPanel();
-    return {
-      colors: Array.from(owned).sort(),
-      view: 'preview',
-      fit: s.fit,
-      paper: s.paper,
-      names: s.showNames ? '1' : '0',
-      nameMode: s.nameMode || 'en',
-      showNameEn: s.showNameEn ? '1' : '0',
-      showNameJa: s.showNameJa ? '1' : '0',
-      titleSize: String(s.titleSize),
-      groupTitleSize: String(s.groupTitleSize),
-      codeSize: String(s.codeSize),
-      nameSize: String(s.nameSize),
-      lineGap: String(s.lineGap),
-      titleGap: String(s.titleGap),
-      groupGap: String(s.groupGap),
-      codeNameGap: String(s.codeNameGap),
-      textAlign: String(s.textAlign || 'center'),
-      cols: String(s.multiColumns),
-      multiAutoFonts: s.multiAutoFonts ? '1' : '0',
-      titleBold: s.titleBold ? '1' : '0',
-      groupTitleBold: s.groupTitleBold ? '1' : '0',
-      codeBold: s.codeBold ? '1' : '0',
-      citation: s.showCitation ? '1' : '0',
-      citationPrintOnly: s.citationPrintOnly ? '1' : '0',
-      text: Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }).filter(Boolean)
-    };
-  }
-  function buildShareURL(snapshot){
-    const snap = snapshot || buildShareSnapshot();
+  function buildShareURL(){
     const params = new URLSearchParams();
-    if(Array.isArray(snap.colors) && snap.colors.length) params.set('colors', snap.colors.join(','));
-    params.set('share', '1');
-    params.set('view', snap.view || 'normal');
-    params.set('fit', snap.fit || DEFAULT_SETTINGS.fit);
-    params.set('paper', snap.paper || DEFAULT_SETTINGS.paper);
-    params.set('names', snap.names == null ? (DEFAULT_SETTINGS.showNames ? '1' : '0') : String(snap.names));
-    params.set('nameMode', snap.nameMode || DEFAULT_SETTINGS.nameMode || 'en');
-    params.set('showNameEn', snap.showNameEn == null ? (DEFAULT_SETTINGS.showNameEn ? '1' : '0') : String(snap.showNameEn));
-    params.set('showNameJa', snap.showNameJa == null ? (DEFAULT_SETTINGS.showNameJa ? '1' : '0') : String(snap.showNameJa));
-    params.set('titleSize', snap.titleSize || String(DEFAULT_SETTINGS.titleSize));
-    params.set('groupTitleSize', snap.groupTitleSize || String(DEFAULT_SETTINGS.groupTitleSize));
-    params.set('codeSize', snap.codeSize || String(DEFAULT_SETTINGS.codeSize));
-    params.set('nameSize', snap.nameSize || String(DEFAULT_SETTINGS.nameSize));
-    params.set('lineGap', snap.lineGap || String(DEFAULT_SETTINGS.lineGap));
-    params.set('titleGap', snap.titleGap || String(DEFAULT_SETTINGS.titleGap));
-    params.set('groupGap', snap.groupGap || String(DEFAULT_SETTINGS.groupGap));
-    params.set('codeNameGap', snap.codeNameGap || String(DEFAULT_SETTINGS.codeNameGap));
-    params.set('textAlign', snap.textAlign || String(DEFAULT_SETTINGS.textAlign || 'center'));
-    params.set('cols', snap.cols || String(DEFAULT_SETTINGS.multiColumns));
-    params.set('multiAutoFonts', snap.multiAutoFonts == null ? (DEFAULT_SETTINGS.multiAutoFonts ? '1' : '0') : String(snap.multiAutoFonts));
-    params.set('titleBold', snap.titleBold == null ? (DEFAULT_SETTINGS.titleBold ? '1' : '0') : String(snap.titleBold));
-    params.set('groupTitleBold', snap.groupTitleBold == null ? (DEFAULT_SETTINGS.groupTitleBold ? '1' : '0') : String(snap.groupTitleBold));
-    params.set('codeBold', snap.codeBold == null ? (DEFAULT_SETTINGS.codeBold ? '1' : '0') : String(snap.codeBold));
-    params.set('citation', snap.citation == null ? (DEFAULT_SETTINGS.showCitation ? '1' : '0') : String(snap.citation));
-    params.set('citationPrintOnly', snap.citationPrintOnly == null ? (DEFAULT_SETTINGS.citationPrintOnly ? '1' : '0') : String(snap.citationPrintOnly));
-    params.set('text', Array.isArray(snap.text) ? snap.text.join(',') : '');
+    const s = readSettingsFromPanel();
+    const colors = Array.from(owned).sort();
+    if(colors.length) params.set('colors', colors.join(','));
+    params.set('view', document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal');
+    params.set('fit', s.fit);
+    params.set('paper', s.paper);
+    params.set('names', s.showNames ? '1' : '0');
+    params.set('nameMode', s.nameMode || 'en');
+    params.set('showNameEn', s.showNameEn ? '1' : '0');
+    params.set('showNameJa', s.showNameJa ? '1' : '0');
+    params.set('titleSize', String(s.titleSize));
+    params.set('groupTitleSize', String(s.groupTitleSize));
+    params.set('codeSize', String(s.codeSize));
+    params.set('nameSize', String(s.nameSize));
+    params.set('lineGap', String(s.lineGap));
+    params.set('titleGap', String(s.titleGap));
+    params.set('groupGap', String(s.groupGap));
+    params.set('codeNameGap', String(s.codeNameGap));
+    params.set('textAlign', String(s.textAlign || 'center'));
+    params.set('cols', String(s.multiColumns));
+    params.set('multiAutoFonts', s.multiAutoFonts ? '1' : '0');
+    params.set('titleBold', s.titleBold ? '1' : '0');
+    params.set('groupTitleBold', s.groupTitleBold ? '1' : '0');
+    params.set('codeBold', s.codeBold ? '1' : '0');
+    params.set('citation', s.showCitation ? '1' : '0');
+    params.set('citationPrintOnly', s.citationPrintOnly ? '1' : '0');
+    const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); });
+    if(enabled.length) params.set('text', enabled.join(','));
     return location.origin + location.pathname + '?' + params.toString();
   }
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
-    isShareLocked = params.get('share') === '1';
-    applyShareLockUI();
+    isShareLocked = params.toString().length > 0;
     const colors = params.get('colors');
     if(colors){
       owned.clear();
       const validCodes = new Set(cards.map(function(card){ return card.dataset.code; }));
       colors.split(',').map(function(v){ return v.trim(); }).filter(Boolean).forEach(function(code){ if(validCodes.has(code)) owned.add(code); });
-      if(!isShareLocked) saveOwned();
+      saveOwned();
     }
     const settings = {
       fit: params.get('fit') || DEFAULT_SETTINGS.fit,
@@ -12388,15 +12335,15 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     };
     syncPanelFromSettings(settings);
     applySettings(settings);
-    if(params.has('text')){
-      const text = params.get('text') || '';
+    const text = params.get('text');
+    if(text){
       const set = new Set(text.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
       document.querySelectorAll('[data-cm-print]').forEach(function(el){
         el.checked = set.has(el.getAttribute('data-cm-print'));
       });
       applyPrintVisibility();
     }
-    if(isShareLocked || params.get('view') === 'preview'){
+    if(params.get('view') === 'preview'){
       document.body.classList.add('preview-selected-only');
       document.body.classList.add('show-selected-only');
       refreshGroups();
@@ -12495,7 +12442,7 @@ function updateMultiColumnsControlState(settings){
       const row = document.createElement('div');
       row.className = 'cm-preset-item';
       row.innerHTML = '<strong></strong><div class="cm-preset-actions"><button type="button" data-cm="preset-load" data-index="'+index+'">開く</button><button type="button" data-cm="preset-copy" data-index="'+index+'">URLコピー</button><button type="button" data-cm="preset-delete" data-index="'+index+'">削除</button></div>';
-      row.querySelector('strong').textContent = (preset.name || ('保存' + (index + 1))) + (preset.snapshot && Array.isArray(preset.snapshot.colors) ? '（' + preset.snapshot.colors.length + '色）' : '');
+      row.querySelector('strong').textContent = preset.name || ('保存' + (index + 1));
       list.appendChild(row);
     });
   }
@@ -12507,11 +12454,9 @@ function updateMultiColumnsControlState(settings){
       return;
     }
     const presets = loadPresets();
-    const snapshot = buildShareSnapshot();
     const payload = {
       name: name,
-      url: buildShareURL(snapshot),
-      snapshot: snapshot,
+      url: buildShareURL(),
       savedAt: new Date().toISOString()
     };
     const foundIndex = presets.findIndex(function(item){ return item && item.name === name; });
@@ -12531,18 +12476,17 @@ function updateMultiColumnsControlState(settings){
     const presets = loadPresets();
     const preset = presets[index];
     if(!preset) return;
-    const presetURL = buildShareURL(preset.snapshot || {});
     if(action === 'preset-load'){
-      window.open(presetURL, '_blank', 'noopener');
+      location.href = preset.url;
     }else if(action === 'preset-copy'){
       if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(presetURL).then(function(){
+        navigator.clipboard.writeText(preset.url).then(function(){
           alert('保存したURLをコピーしました');
         }).catch(function(){
-          window.prompt('このURLをコピーしてください', presetURL);
+          window.prompt('このURLをコピーしてください', preset.url);
         });
       }else{
-        window.prompt('このURLをコピーしてください', presetURL);
+        window.prompt('このURLをコピーしてください', preset.url);
       }
     }else if(action === 'preset-delete'){
       presets.splice(index, 1);
@@ -12551,26 +12495,6 @@ function updateMultiColumnsControlState(settings){
     }
   }
   let isShareLocked = false;
-  function applyShareLockUI(){
-    document.body.classList.toggle('cm-share-locked', !!isShareLocked);
-    if(isShareLocked){
-      document.body.classList.add('preview-selected-only');
-      document.body.classList.add('show-selected-only');
-    }
-    if(panel){
-      panel.classList.toggle('is-share-locked', !!isShareLocked);
-      panel.style.display = isShareLocked ? 'none' : '';
-    }
-    document.querySelectorAll('.mihon .cm-card-toggle').forEach(function(el){
-      el.style.display = isShareLocked ? 'none' : '';
-    });
-    document.querySelectorAll('.cm-inline-group-actions').forEach(function(el){
-      el.style.display = isShareLocked ? 'none' : '';
-    });
-    document.querySelectorAll('.cm-inline-check').forEach(function(el){
-      el.style.display = isShareLocked ? 'none' : '';
-    });
-  }
   function createPanel(){
     const calloutWrap = document.querySelector('.cm-inline-print-option--callout');
     if(!calloutWrap) return;
@@ -12717,7 +12641,7 @@ function updateMultiColumnsControlState(settings){
     }
     statusEl = panel.querySelector('#cmOwnedCount');
     panel.querySelector('#cmTotalCount').textContent = String(cards.length);
-    applyShareLockUI();
+    if(isShareLocked) panel.classList.add('is-share-locked');
 
     document.querySelectorAll('[data-cm-print]').forEach(function(chk){
       chk.addEventListener('change', function(e){
@@ -12800,14 +12724,6 @@ function updateMultiColumnsControlState(settings){
         refreshGroups();
         updateHeading();
       }else if(action === 'preview-reset'){
-        if(isShareLocked){
-          document.body.classList.add('preview-selected-only');
-          document.body.classList.add('show-selected-only');
-          applyPrintVisibility();
-          refreshGroups();
-          updateHeading();
-          return;
-        }
         document.body.classList.remove('preview-selected-only');
         document.body.classList.remove('show-selected-only');
         applyPrintVisibility();
@@ -12877,28 +12793,26 @@ function updateMultiColumnsControlState(settings){
     const titleNote = document.querySelector('.cm-source-note--title');
     const notesNote = document.querySelector('.cm-source-note--notes');
     const footerNote = document.querySelector('.cm-print-footer-citation');
+    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
+    const hasNoteRows = ['paper-type','ink-ratio'].some(function(key){ return enabled.has(key); });
     const showOnScreen = !!s.showCitation;
     const showFooter = !!s.citationPrintOnly;
 
-    /* 通常表示・プレビュー表示ともに、引用は常に枠下側だけに出す */
     if(titleNote){
-      titleNote.style.display = 'none';
-      titleNote.hidden = true;
+      titleNote.style.display = showOnScreen && !hasNoteRows ? '' : 'none';
     }
     if(notesNote){
-      notesNote.style.display = showOnScreen ? '' : 'none';
-      notesNote.hidden = !showOnScreen;
+      notesNote.style.display = showOnScreen && hasNoteRows ? '' : 'none';
     }
     if(footerNote){
       footerNote.style.display = showFooter ? 'block' : 'none';
-      footerNote.hidden = !showFooter;
     }
   }
 
   function updateNoteBoxState(){
     const noteBox = document.querySelector('.cm-note-box');
     if(!noteBox) return;
-    const previewOrPrint = isShareLocked || document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
+    const previewOrPrint = document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
     const rows = Array.from(noteBox.querySelectorAll('[data-print-control-row]'));
     const visibleRows = previewOrPrint ? rows.filter(function(row){ return !row.classList.contains('is-off'); }) : rows;
     noteBox.classList.remove('cm-note-box--none','cm-note-box--single','cm-note-box--double');
@@ -12911,19 +12825,17 @@ function updateMultiColumnsControlState(settings){
     }
   }
   function applyPrintVisibility(){
-    const enabled = getEnabledPrintKeys();
-    const previewOrPrint = isShareLocked || document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
+    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
+    const previewOrPrint = document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
     document.querySelectorAll('[data-print-block]').forEach(function(el){
       const key = el.getAttribute('data-print-block');
       const isOn = enabled.has(key);
       el.classList.toggle('print-hidden', !isOn);
-      el.hidden = previewOrPrint && !isOn;
     });
     document.querySelectorAll('[data-print-control-row]').forEach(function(row){
       const key = row.getAttribute('data-print-control-row');
       const isOn = enabled.has(key);
       row.classList.toggle('is-off', previewOrPrint && !isOn);
-      row.hidden = previewOrPrint && !isOn;
     });
     updateNoteBoxState();
     updateCitationPlacement();
@@ -12959,26 +12871,16 @@ function updateMultiColumnsControlState(settings){
       const group = h2.childNodes[0] ? h2.childNodes[0].textContent.trim() : h2.textContent.trim();
       if(!group || h2.querySelector('.cm-inline-group-actions')) return;
       h2.setAttribute('data-cm-group', group);
-      if(!h2.querySelector('.cm-group-owned-count')){
-        const countEl = document.createElement('span');
-        countEl.className = 'cm-group-owned-count';
-        countEl.setAttribute('data-cm-group-count', group);
-        countEl.textContent = '0';
-        h2.appendChild(countEl);
-      }
       const wrap = document.createElement('span');
       wrap.className = 'cm-inline-group-actions';
       wrap.innerHTML = '<button type="button">チェック</button><button type="button">外す</button>';
       const btns = wrap.querySelectorAll('button');
-      if(isShareLocked) wrap.style.display = 'none'; else wrap.style.display = '';
       btns[0].addEventListener('click', function(){
-        if(isShareLocked) return;
         cards.filter(card => card.dataset.group === group).forEach(card => owned.add(card.dataset.code));
         saveOwned();
         refreshUI();
       });
       btns[1].addEventListener('click', function(){
-        if(isShareLocked) return;
         cards.filter(card => card.dataset.group === group).forEach(card => owned.delete(card.dataset.code));
         saveOwned();
         refreshUI();
@@ -13053,7 +12955,6 @@ function updateMultiColumnsControlState(settings){
       toggleBtn.setAttribute('aria-label', code + ' を所持チェック');
       toggleBtn.addEventListener('click', function(e){
         e.preventDefault(); e.stopPropagation();
-        if(isShareLocked) return;
         toggleOwned(code);
       });
       const previewBtn = document.createElement('button');
@@ -13064,12 +12965,10 @@ function updateMultiColumnsControlState(settings){
         e.preventDefault(); e.stopPropagation();
         if(card.dataset.href) window.open(card.dataset.href, '_blank');
       });
-      if(isShareLocked) toggleBtn.style.display = 'none'; else toggleBtn.style.display = '';
       card.appendChild(toggleBtn);
       card.appendChild(previewBtn);
       card.addEventListener('click', function(e){
         if(e.target.closest('.cm-preview-btn')) return;
-        if(isShareLocked) return;
         e.preventDefault();
         toggleOwned(code);
       });
@@ -13077,10 +12976,26 @@ function updateMultiColumnsControlState(settings){
     cards = cards.filter(card => card.dataset.code);
   }
   function toggleOwned(code){
-    if(isShareLocked) return;
     if(owned.has(code)) owned.delete(code); else owned.add(code);
     saveOwned();
     refreshUI();
+  }
+  function updateGroupCounts(){
+    document.querySelectorAll('.iromihon h2').forEach(function(h2){
+      const app = h2.nextElementSibling;
+      if(!app || !app.classList.contains('app')) return;
+      const count = app.querySelectorAll('.mihon.is-owned').length;
+      let countEl = h2.querySelector('.cm-group-count');
+      if(!countEl){
+        countEl = document.createElement('span');
+        countEl.className = 'cm-group-count';
+        const actions = h2.querySelector('.cm-inline-group-actions');
+        if(actions) h2.insertBefore(countEl, actions);
+        else h2.appendChild(countEl);
+      }
+      countEl.textContent = String(count);
+      countEl.classList.toggle('is-zero', count === 0);
+    });
   }
   function refreshGroups(){
     const selectedMode = document.body.classList.contains('show-selected-only');
@@ -13112,15 +13027,8 @@ function updateMultiColumnsControlState(settings){
       const btn = card.querySelector('.cm-card-toggle');
       if(btn) btn.textContent = isOwned ? '外す' : '囲む';
     });
-    document.querySelectorAll('.iromihon h2[data-cm-group]').forEach(function(h2){
-      const group = h2.getAttribute('data-cm-group') || '';
-      const countEl = h2.querySelector('.cm-group-owned-count');
-      if(!countEl) return;
-      const n = cards.filter(card => card.dataset.group === group && owned.has(card.dataset.code)).length;
-      countEl.textContent = String(n);
-      countEl.style.display = (document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only')) ? 'none' : 'inline-block';
-    });
     if(statusEl) statusEl.textContent = String(owned.size);
+    updateGroupCounts();
     applyPrintVisibility();
     refreshGroups();
     updateHeading();
@@ -13131,8 +13039,6 @@ function updateMultiColumnsControlState(settings){
     detectInitialSettings();
     owned = loadOwned();
     createPanel();
-    applyStateFromURL();
-    applyShareLockUI();
     applyPrintVisibility();
     applyPrintFit();
     refreshUI();
@@ -13147,83 +13053,6 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 });
 
 </script>
-
-
-
-<script id="cm-series-count-script-fix">
-(function(){
-  function getOwnedCountForHeader(h2){
-    var app = h2.nextElementSibling;
-    if(!app) return 0;
-    return app.querySelectorAll('.mihon.is-owned').length;
-  }
-
-  function getBaseCode(h2){
-    if(h2.dataset.cmBaseCode) return h2.dataset.cmBaseCode;
-    var txt = (h2.textContent || '').replace(/\s+/g,' ').trim();
-    var m = txt.match(/^[A-Z]+/);
-    var base = m ? m[0] : txt.replace(/\d+/g,'').trim();
-    h2.dataset.cmBaseCode = base || txt;
-    return h2.dataset.cmBaseCode;
-  }
-
-  function refreshOneHeader(h2){
-    if(!h2) return;
-    var actions = h2.querySelector('.cm-inline-group-actions');
-    var base = getBaseCode(h2);
-    var count = getOwnedCountForHeader(h2);
-
-    var codeSpan = h2.querySelector('.cm-series-code');
-    if(!codeSpan){
-      codeSpan = document.createElement('span');
-      codeSpan.className = 'cm-series-code';
-    }
-    codeSpan.textContent = base;
-
-    var countSpan = h2.querySelector('.color-count');
-    if(!countSpan){
-      countSpan = document.createElement('span');
-      countSpan.className = 'color-count';
-    }
-    countSpan.textContent = ' ' + String(count);
-
-    h2.textContent = '';
-    h2.appendChild(codeSpan);
-    h2.appendChild(countSpan);
-    if(actions){
-      h2.appendChild(document.createTextNode(' '));
-      h2.appendChild(actions);
-    }
-  }
-
-  function refreshAllHeaders(){
-    document.querySelectorAll('.iromihon > h2').forEach(refreshOneHeader);
-  }
-
-  function refreshFromTarget(target){
-    if(!target || !target.closest) return refreshAllHeaders();
-    var app = target.closest('.mihon-app');
-    if(!app) return refreshAllHeaders();
-    var h2 = app.previousElementSibling;
-    if(h2 && h2.matches('h2')) refreshOneHeader(h2);
-  }
-
-  document.addEventListener('DOMContentLoaded', function(){
-    refreshAllHeaders();
-
-    document.addEventListener('click', function(e){
-      var t = e.target;
-      setTimeout(function(){ refreshFromTarget(t); }, 0);
-    }, true);
-
-    document.addEventListener('change', function(e){
-      var t = e.target;
-      setTimeout(function(){ refreshFromTarget(t); }, 0);
-    }, true);
-  });
-})();
-</script>
-
 
 </body>
 </html>
