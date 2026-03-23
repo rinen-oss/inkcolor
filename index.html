@@ -12494,7 +12494,7 @@ function updateMultiColumnsControlState(settings){
     if(!preset) return;
     const presetURL = buildShareURL(preset.snapshot || {});
     if(action === 'preset-load'){
-      location.href = presetURL;
+      window.open(presetURL, '_blank', 'noopener');
     }else if(action === 'preset-copy'){
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(presetURL).then(function(){
@@ -12761,6 +12761,14 @@ function updateMultiColumnsControlState(settings){
         refreshGroups();
         updateHeading();
       }else if(action === 'preview-reset'){
+        if(isShareLocked){
+          document.body.classList.add('preview-selected-only');
+          document.body.classList.add('show-selected-only');
+          applyPrintVisibility();
+          refreshGroups();
+          updateHeading();
+          return;
+        }
         document.body.classList.remove('preview-selected-only');
         document.body.classList.remove('show-selected-only');
         applyPrintVisibility();
@@ -12849,7 +12857,7 @@ function updateMultiColumnsControlState(settings){
   function updateNoteBoxState(){
     const noteBox = document.querySelector('.cm-note-box');
     if(!noteBox) return;
-    const previewOrPrint = document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
+    const previewOrPrint = isShareLocked || document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
     const rows = Array.from(noteBox.querySelectorAll('[data-print-control-row]'));
     const visibleRows = previewOrPrint ? rows.filter(function(row){ return !row.classList.contains('is-off'); }) : rows;
     noteBox.classList.remove('cm-note-box--none','cm-note-box--single','cm-note-box--double');
@@ -12863,7 +12871,7 @@ function updateMultiColumnsControlState(settings){
   }
   function applyPrintVisibility(){
     const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
-    const previewOrPrint = document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
+    const previewOrPrint = isShareLocked || document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
     document.querySelectorAll('[data-print-block]').forEach(function(el){
       const key = el.getAttribute('data-print-block');
       const isOn = enabled.has(key);
