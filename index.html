@@ -8068,21 +8068,6 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 }
 </style>
 
-
-<style id="cm-hide-count-fix">
-/* プレビューモードで色タイトル横の数字非表示 */
-body.preview-selected-only .cm-group-count{
-  display:none !important;
-}
-
-/* 印刷時も非表示 */
-@media print{
-  .cm-group-count{
-    display:none !important;
-  }
-}
-</style>
-
 </head>
 
 <body>
@@ -12401,35 +12386,13 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     }
     return result;
   }
-  function buildShareURL(forcePreview){
-    const params = new URLSearchParams();
-    const s = readSettingsFromPanel();
-    const shortColors = encodeOwnedShort();
-    if(shortColors) params.set('c', shortColors);
-    const previewMode = forcePreview === undefined ? true : !!forcePreview;
-    params.set('v', previewMode ? 'p' : (document.body.classList.contains('preview-selected-only') ? 'p' : 'n'));
-    params.set('f', s.fit === 'multi' ? 'm' : 'o');
-    params.set('p', s.paper === 'a3' ? '3' : '4');
-    params.set('n', s.showNames ? '1' : '0');
-    params.set('ne', s.showNameEn ? '1' : '0');
-    params.set('nj', s.showNameJa ? '1' : '0');
-    params.set('ts', String(s.titleSize));
-    params.set('gs', String(s.groupTitleSize));
-    params.set('cs', String(s.codeSize));
-    params.set('ns', String(s.nameSize));
-    params.set('lg', String(s.lineGap));
-    params.set('tg', String(s.titleGap));
-    params.set('gg', String(s.groupGap));
-    params.set('cg', String(s.codeNameGap));
-    params.set('a', String(s.textAlign || 'center') === 'left' ? 'l' : 'c');
-    params.set('cl', String(s.multiColumns));
-    params.set('af', s.multiAutoFonts ? '1' : '0');
-    params.set('tb', s.titleBold ? '1' : '0');
-    params.set('gb', s.groupTitleBold ? '1' : '0');
-    params.set('cb', s.codeBold ? '1' : '0');
-    params.set('ct', s.showCitation ? '1' : '0');
-    params.set('cp', s.citationPrintOnly ? '1' : '0');
-    const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); });
+  
+function buildShareURL(){
+  const base = location.origin + location.pathname;
+  const c = encodeURIComponent(exportColors());
+  return base + "?c=" + c;
+}
+);
     if(enabled.length) params.set('t', toUrlSafeBase64(unescape(encodeURIComponent(enabled.join(',')))));
     const bg = localStorage.getItem('bgColor');
     if(bg && /^#[0-9a-fA-F]{6}$/.test(bg) && bg.toLowerCase() !== '#ffffff'){
