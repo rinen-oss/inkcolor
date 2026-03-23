@@ -8115,6 +8115,29 @@ body.preview-selected-only .cm-group-count{
 }
 </style>
 
+
+<style id="cm-mobile-menuicon-remove-fix">
+@media screen and (max-width: 768px){
+  .menu-icon,
+  .title-bar-title,
+  .title-bar-right,
+  .title-bar-left,
+  .menu-toggle,
+  .nav-toggle,
+  .hamburger,
+  .hamburger-menu,
+  .off-canvas-toggle,
+  [aria-label*="menu" i],
+  [aria-label*="navigation" i],
+  button[class*="menu"],
+  a[class*="menu"],
+  button[class*="nav"],
+  a[class*="nav"]{
+    display:none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
