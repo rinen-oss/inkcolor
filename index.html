@@ -12250,37 +12250,65 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     document.querySelectorAll('[data-cm-print]').forEach(function(el){ el.checked = checked; });
     applyPrintVisibility();
   }
-  function buildShareURL(){
-    const params = new URLSearchParams();
+  function buildShareSnapshot(){
     const s = readSettingsFromPanel();
-    const colors = Array.from(owned).sort();
+    return {
+      colors: Array.from(owned).sort(),
+      view: document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal',
+      fit: s.fit,
+      paper: s.paper,
+      names: s.showNames ? '1' : '0',
+      nameMode: s.nameMode || 'en',
+      showNameEn: s.showNameEn ? '1' : '0',
+      showNameJa: s.showNameJa ? '1' : '0',
+      titleSize: String(s.titleSize),
+      groupTitleSize: String(s.groupTitleSize),
+      codeSize: String(s.codeSize),
+      nameSize: String(s.nameSize),
+      lineGap: String(s.lineGap),
+      titleGap: String(s.titleGap),
+      groupGap: String(s.groupGap),
+      codeNameGap: String(s.codeNameGap),
+      textAlign: String(s.textAlign || 'center'),
+      cols: String(s.multiColumns),
+      multiAutoFonts: s.multiAutoFonts ? '1' : '0',
+      titleBold: s.titleBold ? '1' : '0',
+      groupTitleBold: s.groupTitleBold ? '1' : '0',
+      codeBold: s.codeBold ? '1' : '0',
+      citation: s.showCitation ? '1' : '0',
+      citationPrintOnly: s.citationPrintOnly ? '1' : '0',
+      text: Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }).filter(Boolean)
+    };
+  }
+  function buildShareURL(snapshot){
+    const snap = snapshot || buildShareSnapshot();
+    const params = new URLSearchParams();
+    if(Array.isArray(snap.colors) && snap.colors.length) params.set('colors', snap.colors.join(','));
     params.set('share', '1');
-    if(colors.length) params.set('colors', colors.join(','));
-    params.set('view', document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal');
-    params.set('fit', s.fit);
-    params.set('paper', s.paper);
-    params.set('names', s.showNames ? '1' : '0');
-    params.set('nameMode', s.nameMode || 'en');
-    params.set('showNameEn', s.showNameEn ? '1' : '0');
-    params.set('showNameJa', s.showNameJa ? '1' : '0');
-    params.set('titleSize', String(s.titleSize));
-    params.set('groupTitleSize', String(s.groupTitleSize));
-    params.set('codeSize', String(s.codeSize));
-    params.set('nameSize', String(s.nameSize));
-    params.set('lineGap', String(s.lineGap));
-    params.set('titleGap', String(s.titleGap));
-    params.set('groupGap', String(s.groupGap));
-    params.set('codeNameGap', String(s.codeNameGap));
-    params.set('textAlign', String(s.textAlign || 'center'));
-    params.set('cols', String(s.multiColumns));
-    params.set('multiAutoFonts', s.multiAutoFonts ? '1' : '0');
-    params.set('titleBold', s.titleBold ? '1' : '0');
-    params.set('groupTitleBold', s.groupTitleBold ? '1' : '0');
-    params.set('codeBold', s.codeBold ? '1' : '0');
-    params.set('citation', s.showCitation ? '1' : '0');
-    params.set('citationPrintOnly', s.citationPrintOnly ? '1' : '0');
-    const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); });
-    if(enabled.length) params.set('text', enabled.join(','));
+    params.set('view', snap.view || 'normal');
+    params.set('fit', snap.fit || DEFAULT_SETTINGS.fit);
+    params.set('paper', snap.paper || DEFAULT_SETTINGS.paper);
+    params.set('names', snap.names == null ? (DEFAULT_SETTINGS.showNames ? '1' : '0') : String(snap.names));
+    params.set('nameMode', snap.nameMode || DEFAULT_SETTINGS.nameMode || 'en');
+    params.set('showNameEn', snap.showNameEn == null ? (DEFAULT_SETTINGS.showNameEn ? '1' : '0') : String(snap.showNameEn));
+    params.set('showNameJa', snap.showNameJa == null ? (DEFAULT_SETTINGS.showNameJa ? '1' : '0') : String(snap.showNameJa));
+    params.set('titleSize', snap.titleSize || String(DEFAULT_SETTINGS.titleSize));
+    params.set('groupTitleSize', snap.groupTitleSize || String(DEFAULT_SETTINGS.groupTitleSize));
+    params.set('codeSize', snap.codeSize || String(DEFAULT_SETTINGS.codeSize));
+    params.set('nameSize', snap.nameSize || String(DEFAULT_SETTINGS.nameSize));
+    params.set('lineGap', snap.lineGap || String(DEFAULT_SETTINGS.lineGap));
+    params.set('titleGap', snap.titleGap || String(DEFAULT_SETTINGS.titleGap));
+    params.set('groupGap', snap.groupGap || String(DEFAULT_SETTINGS.groupGap));
+    params.set('codeNameGap', snap.codeNameGap || String(DEFAULT_SETTINGS.codeNameGap));
+    params.set('textAlign', snap.textAlign || String(DEFAULT_SETTINGS.textAlign || 'center'));
+    params.set('cols', snap.cols || String(DEFAULT_SETTINGS.multiColumns));
+    params.set('multiAutoFonts', snap.multiAutoFonts == null ? (DEFAULT_SETTINGS.multiAutoFonts ? '1' : '0') : String(snap.multiAutoFonts));
+    params.set('titleBold', snap.titleBold == null ? (DEFAULT_SETTINGS.titleBold ? '1' : '0') : String(snap.titleBold));
+    params.set('groupTitleBold', snap.groupTitleBold == null ? (DEFAULT_SETTINGS.groupTitleBold ? '1' : '0') : String(snap.groupTitleBold));
+    params.set('codeBold', snap.codeBold == null ? (DEFAULT_SETTINGS.codeBold ? '1' : '0') : String(snap.codeBold));
+    params.set('citation', snap.citation == null ? (DEFAULT_SETTINGS.showCitation ? '1' : '0') : String(snap.citation));
+    params.set('citationPrintOnly', snap.citationPrintOnly == null ? (DEFAULT_SETTINGS.citationPrintOnly ? '1' : '0') : String(snap.citationPrintOnly));
+    if(Array.isArray(snap.text) && snap.text.length) params.set('text', snap.text.join(','));
     return location.origin + location.pathname + '?' + params.toString();
   }
   function applyStateFromURL(){
@@ -12427,7 +12455,7 @@ function updateMultiColumnsControlState(settings){
       const row = document.createElement('div');
       row.className = 'cm-preset-item';
       row.innerHTML = '<strong></strong><div class="cm-preset-actions"><button type="button" data-cm="preset-load" data-index="'+index+'">開く</button><button type="button" data-cm="preset-copy" data-index="'+index+'">URLコピー</button><button type="button" data-cm="preset-delete" data-index="'+index+'">削除</button></div>';
-      row.querySelector('strong').textContent = preset.name || ('保存' + (index + 1));
+      row.querySelector('strong').textContent = (preset.name || ('保存' + (index + 1))) + (preset.snapshot && Array.isArray(preset.snapshot.colors) ? '（' + preset.snapshot.colors.length + '色）' : '');
       list.appendChild(row);
     });
   }
@@ -12439,9 +12467,11 @@ function updateMultiColumnsControlState(settings){
       return;
     }
     const presets = loadPresets();
+    const snapshot = buildShareSnapshot();
     const payload = {
       name: name,
-      url: buildShareURL(),
+      url: buildShareURL(snapshot),
+      snapshot: snapshot,
       savedAt: new Date().toISOString()
     };
     const foundIndex = presets.findIndex(function(item){ return item && item.name === name; });
@@ -12461,17 +12491,18 @@ function updateMultiColumnsControlState(settings){
     const presets = loadPresets();
     const preset = presets[index];
     if(!preset) return;
+    const presetURL = buildShareURL(preset.snapshot || {});
     if(action === 'preset-load'){
-      location.href = preset.url;
+      location.href = presetURL;
     }else if(action === 'preset-copy'){
       if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(preset.url).then(function(){
+        navigator.clipboard.writeText(presetURL).then(function(){
           alert('保存したURLをコピーしました');
         }).catch(function(){
-          window.prompt('このURLをコピーしてください', preset.url);
+          window.prompt('このURLをコピーしてください', presetURL);
         });
       }else{
-        window.prompt('このURLをコピーしてください', preset.url);
+        window.prompt('このURLをコピーしてください', presetURL);
       }
     }else if(action === 'preset-delete'){
       presets.splice(index, 1);
@@ -12626,10 +12657,7 @@ function updateMultiColumnsControlState(settings){
     }
     statusEl = panel.querySelector('#cmOwnedCount');
     panel.querySelector('#cmTotalCount').textContent = String(cards.length);
-    if(isShareLocked){
-      panel.classList.add('is-share-locked');
-      panel.hidden = true;
-    }
+    if(isShareLocked){ panel.classList.add('is-share-locked'); panel.style.display = 'none'; }
 
     document.querySelectorAll('[data-cm-print]').forEach(function(chk){
       chk.addEventListener('change', function(e){
@@ -12863,14 +12891,13 @@ function updateMultiColumnsControlState(settings){
       wrap.className = 'cm-inline-group-actions';
       wrap.innerHTML = '<button type="button">チェック</button><button type="button">外す</button>';
       const btns = wrap.querySelectorAll('button');
+      if(isShareLocked) wrap.style.display = 'none';
       btns[0].addEventListener('click', function(){
-        if(isShareLocked) return;
         cards.filter(card => card.dataset.group === group).forEach(card => owned.add(card.dataset.code));
         saveOwned();
         refreshUI();
       });
       btns[1].addEventListener('click', function(){
-        if(isShareLocked) return;
         cards.filter(card => card.dataset.group === group).forEach(card => owned.delete(card.dataset.code));
         saveOwned();
         refreshUI();
@@ -12956,6 +12983,7 @@ function updateMultiColumnsControlState(settings){
         e.preventDefault(); e.stopPropagation();
         if(card.dataset.href) window.open(card.dataset.href, '_blank');
       });
+      if(isShareLocked) toggleBtn.style.display = 'none';
       card.appendChild(toggleBtn);
       card.appendChild(previewBtn);
       card.addEventListener('click', function(e){
@@ -12968,6 +12996,7 @@ function updateMultiColumnsControlState(settings){
     cards = cards.filter(card => card.dataset.code);
   }
   function toggleOwned(code){
+    if(isShareLocked) return;
     if(owned.has(code)) owned.delete(code); else owned.add(code);
     saveOwned();
     refreshUI();
