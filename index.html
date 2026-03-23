@@ -7996,6 +7996,78 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 <meta name="twitter:site" content="@IC_korisu" />
 <meta name="twitter:title" content="コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト">
 <meta name="twitter:description" content="コピックインクのカラーラインナップは全358色。 1色でもアルコールインクアートならではの濃淡をお楽...">
+
+<style id="cm-custom-zoom-style">
+#cmCustomZoomOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.42);
+  z-index:99999;
+  padding:24px;
+  cursor:pointer;
+}
+#cmCustomZoomOverlay.is-open{
+  display:flex;
+}
+#cmCustomZoomOverlay .cm-custom-zoom-inner{
+  position:relative;
+  max-width:min(94vw, 720px);
+  width:100%;
+  max-height:92vh;
+  overflow:auto;
+  cursor:pointer;
+}
+#cmCustomZoomOverlay .cm-custom-zoom-close{
+  position:fixed;
+  top:14px;
+  right:16px;
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  color:#111;
+  font-size:28px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:100000;
+  cursor:pointer;
+}
+#cmCustomZoomOverlay .cm-custom-zoom-card{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 10px 40px rgba(0,0,0,.22);
+}
+#cmCustomZoomOverlay .cm-custom-zoom-card .mihon{
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+}
+#cmCustomZoomOverlay .cm-custom-zoom-card .article-cover img{
+  width:100% !important;
+  height:auto !important;
+  max-height:72vh;
+  object-fit:contain;
+}
+#cmCustomZoomOverlay .cm-custom-zoom-card .cm-card-toggle,
+#cmCustomZoomOverlay .cm-custom-zoom-card .cm-preview-btn,
+#cmCustomZoomOverlay .cm-custom-zoom-card .cm-inline-group-actions,
+#cmCustomZoomOverlay .cm-custom-zoom-card .cm-inline-check{
+  display:none !important;
+}
+#cmCustomZoomOverlay,
+#cmCustomZoomOverlay *{
+  -webkit-user-select:none;
+  user-select:none;
+}
+</style>
+
 </head>
 
 <body>
@@ -12278,141 +12350,86 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     document.querySelectorAll('[data-cm-print]').forEach(function(el){ el.checked = checked; });
     applyPrintVisibility();
   }
-  function toBase64Url(bytes){
-    let binary = '';
-    for(let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  }
-  function fromBase64Url(str){
-    const base64 = String(str || '').replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64 + '==='.slice((base64.length + 3) % 4);
-    const binary = atob(padded);
-    const bytes = new Uint8Array(binary.length);
-    for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes;
-  }
-  function encodeBitsetFromValues(selectedValues, orderValues){
-    const selected = new Set(selectedValues);
-    const bytes = new Uint8Array(Math.ceil(orderValues.length / 8));
-    orderValues.forEach(function(value, index){
-      if(selected.has(value)) bytes[index >> 3] |= (1 << (index & 7));
-    });
-    return toBase64Url(bytes);
-  }
-  function decodeBitsetToSet(encoded, orderValues){
-    const out = new Set();
-    if(!encoded) return out;
-    try{
-      const bytes = fromBase64Url(encoded);
-      orderValues.forEach(function(value, index){
-        if(bytes[index >> 3] & (1 << (index & 7))) out.add(value);
-      });
-    }catch(e){}
-    return out;
-  }
-  function getShareTextKeys(){
-    return Array.from(document.querySelectorAll('[data-cm-print]')).map(function(el){ return el.getAttribute('data-cm-print'); });
-  }
-  function setParamIfNeeded(params, key, value, defaultValue){
-    if(String(value) !== String(defaultValue)) params.set(key, String(value));
-  }
   function buildShareURL(forcePreview){
     const params = new URLSearchParams();
     const s = readSettingsFromPanel();
-    const colorOrder = cards.map(function(card){ return card.dataset.code; });
-    const colorBits = encodeBitsetFromValues(colorOrder.filter(function(code){ return owned.has(code); }), colorOrder);
-    if(colorBits) params.set('c', colorBits);
+    const colors = Array.from(owned).sort();
+    if(colors.length) params.set('colors', colors.join(','));
     const previewMode = forcePreview === undefined ? true : !!forcePreview;
-    if(previewMode || document.body.classList.contains('preview-selected-only')) params.set('v', 'p');
-    setParamIfNeeded(params, 'f', s.fit, DEFAULT_SETTINGS.fit);
-    setParamIfNeeded(params, 'p', s.paper, DEFAULT_SETTINGS.paper);
-    setParamIfNeeded(params, 'n', s.showNames ? 1 : 0, DEFAULT_SETTINGS.showNames ? 1 : 0);
-    setParamIfNeeded(params, 'nm', s.nameMode || 'en', DEFAULT_SETTINGS.nameMode);
-    setParamIfNeeded(params, 'ne', s.showNameEn ? 1 : 0, DEFAULT_SETTINGS.showNameEn ? 1 : 0);
-    setParamIfNeeded(params, 'nj', s.showNameJa ? 1 : 0, DEFAULT_SETTINGS.showNameJa ? 1 : 0);
-    setParamIfNeeded(params, 'ts', s.titleSize, DEFAULT_SETTINGS.titleSize);
-    setParamIfNeeded(params, 'gs', s.groupTitleSize, DEFAULT_SETTINGS.groupTitleSize);
-    setParamIfNeeded(params, 'cs', s.codeSize, DEFAULT_SETTINGS.codeSize);
-    setParamIfNeeded(params, 'ns', s.nameSize, DEFAULT_SETTINGS.nameSize);
-    setParamIfNeeded(params, 'lg', s.lineGap, DEFAULT_SETTINGS.lineGap);
-    setParamIfNeeded(params, 'tg', s.titleGap, DEFAULT_SETTINGS.titleGap);
-    setParamIfNeeded(params, 'gg', s.groupGap, DEFAULT_SETTINGS.groupGap);
-    setParamIfNeeded(params, 'cg', s.codeNameGap, DEFAULT_SETTINGS.codeNameGap);
-    setParamIfNeeded(params, 'ta', s.textAlign || 'center', DEFAULT_SETTINGS.textAlign);
-    setParamIfNeeded(params, 'cl', s.multiColumns, DEFAULT_SETTINGS.multiColumns);
-    setParamIfNeeded(params, 'ma', s.multiAutoFonts ? 1 : 0, DEFAULT_SETTINGS.multiAutoFonts ? 1 : 0);
-    setParamIfNeeded(params, 'tb', s.titleBold ? 1 : 0, DEFAULT_SETTINGS.titleBold ? 1 : 0);
-    setParamIfNeeded(params, 'gb', s.groupTitleBold ? 1 : 0, DEFAULT_SETTINGS.groupTitleBold ? 1 : 0);
-    setParamIfNeeded(params, 'cb', s.codeBold ? 1 : 0, DEFAULT_SETTINGS.codeBold ? 1 : 0);
-    setParamIfNeeded(params, 'ct', s.showCitation ? 1 : 0, DEFAULT_SETTINGS.showCitation ? 1 : 0);
-    setParamIfNeeded(params, 'cp', s.citationPrintOnly ? 1 : 0, DEFAULT_SETTINGS.citationPrintOnly ? 1 : 0);
-    const textKeys = getShareTextKeys();
-    const enabledText = textKeys.filter(function(key){
-      const el = document.querySelector('[data-cm-print="' + key + '"]');
-      return el && el.checked;
-    });
-    const textBits = encodeBitsetFromValues(enabledText, textKeys);
-    if(textBits) params.set('t', textBits);
+    params.set('view', previewMode ? 'preview' : (document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal'));
+    params.set('fit', s.fit);
+    params.set('paper', s.paper);
+    params.set('names', s.showNames ? '1' : '0');
+    params.set('nameMode', s.nameMode || 'en');
+    params.set('showNameEn', s.showNameEn ? '1' : '0');
+    params.set('showNameJa', s.showNameJa ? '1' : '0');
+    params.set('titleSize', String(s.titleSize));
+    params.set('groupTitleSize', String(s.groupTitleSize));
+    params.set('codeSize', String(s.codeSize));
+    params.set('nameSize', String(s.nameSize));
+    params.set('lineGap', String(s.lineGap));
+    params.set('titleGap', String(s.titleGap));
+    params.set('groupGap', String(s.groupGap));
+    params.set('codeNameGap', String(s.codeNameGap));
+    params.set('textAlign', String(s.textAlign || 'center'));
+    params.set('cols', String(s.multiColumns));
+    params.set('multiAutoFonts', s.multiAutoFonts ? '1' : '0');
+    params.set('titleBold', s.titleBold ? '1' : '0');
+    params.set('groupTitleBold', s.groupTitleBold ? '1' : '0');
+    params.set('codeBold', s.codeBold ? '1' : '0');
+    params.set('citation', s.showCitation ? '1' : '0');
+    params.set('citationPrintOnly', s.citationPrintOnly ? '1' : '0');
+    const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); });
+    if(enabled.length) params.set('text', enabled.join(','));
     return location.origin + location.pathname + '?' + params.toString();
   }
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
     isShareLocked = params.toString().length > 0;
     document.body.classList.toggle('cm-share-view', isShareLocked);
-
-    const colorOrder = cards.map(function(card){ return card.dataset.code; });
-    const colorsBits = params.get('c');
     const colors = params.get('colors');
-    if(colorsBits || colors){
+    if(colors){
       owned.clear();
-      if(colorsBits){
-        decodeBitsetToSet(colorsBits, colorOrder).forEach(function(code){ owned.add(code); });
-      }else if(colors){
-        const validCodes = new Set(colorOrder);
-        colors.split(',').map(function(v){ return v.trim(); }).filter(Boolean).forEach(function(code){ if(validCodes.has(code)) owned.add(code); });
-      }
+      const validCodes = new Set(cards.map(function(card){ return card.dataset.code; }));
+      colors.split(',').map(function(v){ return v.trim(); }).filter(Boolean).forEach(function(code){ if(validCodes.has(code)) owned.add(code); });
       saveOwned();
     }
-
     const settings = {
-      fit: params.get('f') || params.get('fit') || DEFAULT_SETTINGS.fit,
-      paper: (params.get('p') || params.get('paper')) === 'a3' ? 'a3' : DEFAULT_SETTINGS.paper,
-      showNames: (params.get('n') !== null ? params.get('n') : params.get('names')) === null ? DEFAULT_SETTINGS.showNames : (params.get('n') !== null ? params.get('n') : params.get('names')) !== '0',
-      nameMode: (params.get('nm') || params.get('nameMode')) === 'ja' ? 'ja' : DEFAULT_SETTINGS.nameMode,
-      showNameEn: (params.get('ne') !== null ? params.get('ne') : params.get('showNameEn')) === null ? DEFAULT_SETTINGS.showNameEn : (params.get('ne') !== null ? params.get('ne') : params.get('showNameEn')) !== '0',
-      showNameJa: (params.get('nj') !== null ? params.get('nj') : params.get('showNameJa')) === null ? DEFAULT_SETTINGS.showNameJa : (params.get('nj') !== null ? params.get('nj') : params.get('showNameJa')) !== '0',
+      fit: params.get('fit') || DEFAULT_SETTINGS.fit,
+      paper: params.get('paper') === 'a3' ? 'a3' : DEFAULT_SETTINGS.paper,
+      showNames: params.get('names') === null ? DEFAULT_SETTINGS.showNames : params.get('names') !== '0',
+      nameMode: params.get('nameMode') === 'ja' ? 'ja' : DEFAULT_SETTINGS.nameMode,
+      showNameEn: params.get('showNameEn') === null ? DEFAULT_SETTINGS.showNameEn : params.get('showNameEn') !== '0',
+      showNameJa: params.get('showNameJa') === null ? DEFAULT_SETTINGS.showNameJa : params.get('showNameJa') !== '0',
       hideBottomRule: true,
-      titleSize: Number(params.get('ts') || params.get('titleSize') || DEFAULT_SETTINGS.titleSize),
-      groupTitleSize: Number(params.get('gs') || params.get('groupTitleSize') || DEFAULT_SETTINGS.groupTitleSize),
-      codeSize: Number(params.get('cs') || params.get('codeSize') || DEFAULT_SETTINGS.codeSize),
-      nameSize: Number(params.get('ns') || params.get('nameSize') || DEFAULT_SETTINGS.nameSize),
-      lineGap: Number(params.get('lg') || params.get('lineGap') || DEFAULT_SETTINGS.lineGap),
-      titleGap: Number(params.get('tg') || params.get('titleGap') || DEFAULT_SETTINGS.titleGap),
-      groupGap: Number(params.get('gg') || params.get('groupGap') || DEFAULT_SETTINGS.groupGap),
-      codeNameGap: Number(params.get('cg') || params.get('codeNameGap') || DEFAULT_SETTINGS.codeNameGap),
-      textAlign: (params.get('ta') || params.get('textAlign')) === 'left' ? 'left' : DEFAULT_SETTINGS.textAlign,
-      multiColumns: Number(params.get('cl') || params.get('cols') || DEFAULT_SETTINGS.multiColumns),
-      multiAutoFonts: (params.get('ma') !== null ? params.get('ma') : params.get('multiAutoFonts')) === null ? DEFAULT_SETTINGS.multiAutoFonts : (params.get('ma') !== null ? params.get('ma') : params.get('multiAutoFonts')) !== '0',
-      titleBold: (params.get('tb') !== null ? params.get('tb') : params.get('titleBold')) === null ? DEFAULT_SETTINGS.titleBold : (params.get('tb') !== null ? params.get('tb') : params.get('titleBold')) !== '0',
-      groupTitleBold: (params.get('gb') !== null ? params.get('gb') : params.get('groupTitleBold')) === null ? DEFAULT_SETTINGS.groupTitleBold : (params.get('gb') !== null ? params.get('gb') : params.get('groupTitleBold')) !== '0',
-      codeBold: (params.get('cb') !== null ? params.get('cb') : params.get('codeBold')) === null ? DEFAULT_SETTINGS.codeBold : (params.get('cb') !== null ? params.get('cb') : params.get('codeBold')) !== '0',
-      showCitation: (params.get('ct') !== null ? params.get('ct') : params.get('citation')) === null ? DEFAULT_SETTINGS.showCitation : (params.get('ct') !== null ? params.get('ct') : params.get('citation')) !== '0',
-      citationPrintOnly: (params.get('cp') !== null ? params.get('cp') : params.get('citationPrintOnly')) === null ? DEFAULT_SETTINGS.citationPrintOnly : (params.get('cp') !== null ? params.get('cp') : params.get('citationPrintOnly')) !== '0'
+      titleSize: Number(params.get('titleSize') || DEFAULT_SETTINGS.titleSize),
+      groupTitleSize: Number(params.get('groupTitleSize') || DEFAULT_SETTINGS.groupTitleSize),
+      codeSize: Number(params.get('codeSize') || DEFAULT_SETTINGS.codeSize),
+      nameSize: Number(params.get('nameSize') || DEFAULT_SETTINGS.nameSize),
+      lineGap: Number(params.get('lineGap') || DEFAULT_SETTINGS.lineGap),
+      titleGap: Number(params.get('titleGap') || DEFAULT_SETTINGS.titleGap),
+      groupGap: Number(params.get('groupGap') || DEFAULT_SETTINGS.groupGap),
+      codeNameGap: Number(params.get('codeNameGap') || DEFAULT_SETTINGS.codeNameGap),
+      textAlign: params.get('textAlign') === 'left' ? 'left' : DEFAULT_SETTINGS.textAlign,
+      multiColumns: Number(params.get('cols') || DEFAULT_SETTINGS.multiColumns),
+      multiAutoFonts: params.get('multiAutoFonts') === null ? DEFAULT_SETTINGS.multiAutoFonts : params.get('multiAutoFonts') !== '0',
+      titleBold: params.get('titleBold') === null ? DEFAULT_SETTINGS.titleBold : params.get('titleBold') !== '0',
+      groupTitleBold: params.get('groupTitleBold') === null ? DEFAULT_SETTINGS.groupTitleBold : params.get('groupTitleBold') !== '0',
+      codeBold: params.get('codeBold') === null ? DEFAULT_SETTINGS.codeBold : params.get('codeBold') !== '0',
+      showCitation: params.get('citation') === null ? DEFAULT_SETTINGS.showCitation : params.get('citation') !== '0',
+      citationPrintOnly: params.get('citationPrintOnly') === null ? DEFAULT_SETTINGS.citationPrintOnly : params.get('citationPrintOnly') !== '0'
     };
     syncPanelFromSettings(settings);
     applySettings(settings);
-
-    const textBits = params.get('t');
     const text = params.get('text');
-    if(textBits || text){
-      const textKeys = getShareTextKeys();
-      const set = textBits ? decodeBitsetToSet(textBits, textKeys) : new Set(text.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
+    if(text){
+      const set = new Set(text.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
       document.querySelectorAll('[data-cm-print]').forEach(function(el){
         el.checked = set.has(el.getAttribute('data-cm-print'));
       });
       applyPrintVisibility();
     }
-    if((params.get('v') || params.get('view')) === 'p' || params.get('view') === 'preview'){
+    if(params.get('view') === 'preview'){
       document.body.classList.add('preview-selected-only');
       document.body.classList.add('show-selected-only');
       refreshGroups();
@@ -13051,6 +13068,7 @@ function updateMultiColumnsControlState(settings){
       card.appendChild(toggleBtn);
       card.appendChild(previewBtn);
       card.addEventListener('click', function(e){
+        if(document.body.classList.contains('preview-selected-only')) return;
         if(e.target.closest('.cm-preview-btn')) return;
         if(isShareLocked) return;
         e.preventDefault();
@@ -13139,6 +13157,99 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
   document.body.classList.toggle('print-only', e.target.checked);
 });
 
+</script>
+
+
+<script id="cm-custom-zoom-script">
+(function(){
+  function initCmCustomZoom(){
+    if(document.getElementById('cmCustomZoomOverlay')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'cmCustomZoomOverlay';
+    overlay.innerHTML = '<button type="button" class="cm-custom-zoom-close" aria-label="閉じる">×</button><div class="cm-custom-zoom-inner"><div class="cm-custom-zoom-card"></div></div>';
+
+    document.body.appendChild(overlay);
+
+    var inner = overlay.querySelector('.cm-custom-zoom-inner');
+    var cardHost = overlay.querySelector('.cm-custom-zoom-card');
+    var closeBtn = overlay.querySelector('.cm-custom-zoom-close');
+
+    function closeZoom(){
+      overlay.classList.remove('is-open');
+      cardHost.innerHTML = '';
+    }
+
+    function stripInteractive(node){
+      node.querySelectorAll('a').forEach(function(a){
+        a.removeAttribute('href');
+        a.removeAttribute('target');
+      });
+      node.querySelectorAll('img,a,.article-cover,.article-text,.mihon').forEach(function(el){
+        el.addEventListener('contextmenu', function(ev){
+          ev.preventDefault();
+        });
+      });
+    }
+
+    function openFromMihon(mihon){
+      if(!mihon) return;
+      var clone = mihon.cloneNode(true);
+      stripInteractive(clone);
+      cardHost.innerHTML = '';
+      cardHost.appendChild(clone);
+      overlay.classList.add('is-open');
+    }
+
+    document.querySelectorAll('.mihon').forEach(function(mihon){
+      var anchor = mihon.querySelector('a');
+      var img = mihon.querySelector('img');
+      var previewBtn = mihon.querySelector('.cm-preview-btn');
+
+      function openHandler(e){
+        e.preventDefault();
+        e.stopPropagation();
+        openFromMihon(mihon);
+      }
+
+      if(anchor){
+        anchor.addEventListener('click', openHandler, true);
+        anchor.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
+      }
+      if(img){
+        img.addEventListener('click', openHandler, true);
+        img.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
+        img.setAttribute('draggable', 'false');
+      }
+      if(previewBtn){
+        previewBtn.addEventListener('click', openHandler, true);
+      }
+      mihon.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
+    });
+
+    overlay.addEventListener('click', function(){
+      closeZoom();
+    });
+    inner.addEventListener('click', function(){
+      closeZoom();
+    });
+    closeBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      closeZoom();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeZoom();
+    });
+    overlay.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initCmCustomZoom, {once:true});
+  }else{
+    initCmCustomZoom();
+  }
+})();
 </script>
 
 </body>
