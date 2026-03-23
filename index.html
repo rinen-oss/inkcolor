@@ -11980,6 +11980,19 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
   };
   const INITIAL_SETTINGS = {};
   const PRESET_STORAGE_KEY = 'copicOwnedSharePresets_v1';
+  function getShareParams(){
+    return new URLSearchParams(location.search);
+  }
+  function getEnabledPrintKeys(){
+    if(isShareLocked){
+      const params = getShareParams();
+      if(params.has('text')){
+        const raw = params.get('text') || '';
+        return new Set(raw.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
+      }
+    }
+    return new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }).filter(Boolean));
+  }
 
   function setCookie(name, value, days){
     const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
@@ -12308,7 +12321,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     params.set('codeBold', snap.codeBold == null ? (DEFAULT_SETTINGS.codeBold ? '1' : '0') : String(snap.codeBold));
     params.set('citation', snap.citation == null ? (DEFAULT_SETTINGS.showCitation ? '1' : '0') : String(snap.citation));
     params.set('citationPrintOnly', snap.citationPrintOnly == null ? (DEFAULT_SETTINGS.citationPrintOnly ? '1' : '0') : String(snap.citationPrintOnly));
-    if(Array.isArray(snap.text) && snap.text.length) params.set('text', snap.text.join(','));
+    params.set('text', Array.isArray(snap.text) ? snap.text.join(',') : '');
     return location.origin + location.pathname + '?' + params.toString();
   }
   function applyStateFromURL(){
@@ -12349,8 +12362,8 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     };
     syncPanelFromSettings(settings);
     applySettings(settings);
-    const text = params.get('text');
-    if(text){
+    if(params.has('text')){
+      const text = params.get('text') || '';
       const set = new Set(text.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
       document.querySelectorAll('[data-cm-print]').forEach(function(el){
         el.checked = set.has(el.getAttribute('data-cm-print'));
@@ -12838,19 +12851,21 @@ function updateMultiColumnsControlState(settings){
     const titleNote = document.querySelector('.cm-source-note--title');
     const notesNote = document.querySelector('.cm-source-note--notes');
     const footerNote = document.querySelector('.cm-print-footer-citation');
-    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
-    const hasNoteRows = ['paper-type','ink-ratio'].some(function(key){ return enabled.has(key); });
     const showOnScreen = !!s.showCitation;
     const showFooter = !!s.citationPrintOnly;
 
+    /* 通常表示・プレビュー表示ともに、引用は常に枠下側だけに出す */
     if(titleNote){
-      titleNote.style.display = showOnScreen && !hasNoteRows ? '' : 'none';
+      titleNote.style.display = 'none';
+      titleNote.hidden = true;
     }
     if(notesNote){
-      notesNote.style.display = showOnScreen && hasNoteRows ? '' : 'none';
+      notesNote.style.display = showOnScreen ? '' : 'none';
+      notesNote.hidden = !showOnScreen;
     }
     if(footerNote){
       footerNote.style.display = showFooter ? 'block' : 'none';
+      footerNote.hidden = !showFooter;
     }
   }
 
@@ -12870,17 +12885,19 @@ function updateMultiColumnsControlState(settings){
     }
   }
   function applyPrintVisibility(){
-    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
+    const enabled = getEnabledPrintKeys();
     const previewOrPrint = isShareLocked || document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only');
     document.querySelectorAll('[data-print-block]').forEach(function(el){
       const key = el.getAttribute('data-print-block');
       const isOn = enabled.has(key);
       el.classList.toggle('print-hidden', !isOn);
+      el.hidden = previewOrPrint && !isOn;
     });
     document.querySelectorAll('[data-print-control-row]').forEach(function(row){
       const key = row.getAttribute('data-print-control-row');
       const isOn = enabled.has(key);
       row.classList.toggle('is-off', previewOrPrint && !isOn);
+      row.hidden = previewOrPrint && !isOn;
     });
     updateNoteBoxState();
     updateCitationPlacement();
