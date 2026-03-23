@@ -13149,6 +13149,7 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 </script>
 
 
+
 <script id="cm-series-count-script-fix">
 (function(){
   function getOwnedCountForHeader(h2){
@@ -13186,7 +13187,6 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     }
     countSpan.textContent = ' ' + String(count);
 
-    // rebuild heading content so count is never fused into title text node
     h2.textContent = '';
     h2.appendChild(codeSpan);
     h2.appendChild(countSpan);
@@ -13200,30 +13200,30 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     document.querySelectorAll('.iromihon > h2').forEach(refreshOneHeader);
   }
 
+  function refreshFromTarget(target){
+    if(!target || !target.closest) return refreshAllHeaders();
+    var app = target.closest('.mihon-app');
+    if(!app) return refreshAllHeaders();
+    var h2 = app.previousElementSibling;
+    if(h2 && h2.matches('h2')) refreshOneHeader(h2);
+  }
+
   document.addEventListener('DOMContentLoaded', function(){
     refreshAllHeaders();
 
-    // Update after clicks/changes that may toggle ownership or mode
-    document.addEventListener('click', function(){
-      setTimeout(refreshAllHeaders, 0);
-    }, true);
-    document.addEventListener('change', function(){
-      setTimeout(refreshAllHeaders, 0);
+    document.addEventListener('click', function(e){
+      var t = e.target;
+      setTimeout(function(){ refreshFromTarget(t); }, 0);
     }, true);
 
-    // Observe class changes / DOM changes
-    var mo = new MutationObserver(function(){
-      refreshAllHeaders();
-    });
-    mo.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
+    document.addEventListener('change', function(e){
+      var t = e.target;
+      setTimeout(function(){ refreshFromTarget(t); }, 0);
+    }, true);
   });
 })();
 </script>
+
 
 </body>
 </html>
