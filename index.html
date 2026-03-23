@@ -12278,12 +12278,13 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     document.querySelectorAll('[data-cm-print]').forEach(function(el){ el.checked = checked; });
     applyPrintVisibility();
   }
-  function buildShareURL(){
+  function buildShareURL(forcePreview){
     const params = new URLSearchParams();
     const s = readSettingsFromPanel();
     const colors = Array.from(owned).sort();
     if(colors.length) params.set('colors', colors.join(','));
-    params.set('view', document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal');
+    const previewMode = forcePreview === undefined ? true : !!forcePreview;
+    params.set('view', previewMode ? 'preview' : (document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal'));
     params.set('fit', s.fit);
     params.set('paper', s.paper);
     params.set('names', s.showNames ? '1' : '0');
@@ -12454,7 +12455,7 @@ function updateMultiColumnsControlState(settings){
     presets.forEach(function(preset, index){
       const row = document.createElement('div');
       row.className = 'cm-preset-item';
-      row.innerHTML = '<strong></strong><div class="cm-preset-actions"><button type="button" data-cm="preset-load" data-index="'+index+'">リンクを開く</button><button type="button" data-cm="preset-copy" data-index="'+index+'">リンクをコピー</button><button type="button" data-cm="preset-delete" data-index="'+index+'">削除</button></div>';
+      row.innerHTML = '<strong></strong><div class="cm-preset-actions"><button type="button" data-cm="preset-load" data-index="'+index+'">開く</button><button type="button" data-cm="preset-copy" data-index="'+index+'">コピー</button><button type="button" data-cm="preset-delete" data-index="'+index+'">削除</button></div>';
       row.querySelector('strong').textContent = preset.name || ('保存' + (index + 1));
       list.appendChild(row);
     });
@@ -12469,7 +12470,7 @@ function updateMultiColumnsControlState(settings){
     const presets = loadPresets();
     const payload = {
       name: name,
-      url: buildShareURL(),
+      url: buildShareURL(true),
       savedAt: new Date().toISOString()
     };
     const foundIndex = presets.findIndex(function(item){ return item && item.name === name; });
@@ -12528,10 +12529,10 @@ function updateMultiColumnsControlState(settings){
           '<div class="cm-row cm-row--toolbar">',
             '<button type="button" data-cm="all-on">全色チェック</button>',
             '<button type="button" data-cm="all-off">全色外す</button>',
-            '<button type="button" data-cm="preview-selected">プレビューモードのリンク</button>',
+            '<button type="button" data-cm="preview-selected">プレビューモード</button>',
             '<button type="button" data-cm="preview-reset">通常表示に戻す</button>',
             '<button type="button" data-cm="print-selected">選択色だけ印刷</button>',
-            '<button type="button" data-cm="copy-share-url" class="cm-preview-hide">共有URLコピーのリンク</button>',
+            '<button type="button" data-cm="copy-share-url" class="cm-preview-hide">共有URLコピー</button>',
             '<button type="button" data-cm="load-file" class="cm-preview-hide">JSON読み込み</button><input class="cm-file" type="file" accept="application/json,.json" hidden>',
             '<button type="button" data-cm="download-file" class="cm-preview-hide">JSON保存</button>',
           '</div>',
@@ -12569,7 +12570,7 @@ function updateMultiColumnsControlState(settings){
               '<div class="cm-details-body">',
                 '<div class="cm-preset-row">',
                   '<input type="text" id="cmPresetName" placeholder="保存名（例：ワークショップ用）" maxlength="30">',
-                  '<button type="button" data-cm="preset-save">共有URL保存のリンク</button>',
+                  '<button type="button" data-cm="preset-save">共有URL保存</button>',
                 '</div>',
                 '<div class="cm-preset-list" id="cmPresetList"></div>',
               '</div>',
@@ -12772,7 +12773,7 @@ function updateMultiColumnsControlState(settings){
       }else if(action === 'text-all-off'){
         setAllTextChecks(false);
       }else if(action === 'copy-share-url'){
-        const url = buildShareURL();
+        const url = buildShareURL(true);
         if(navigator.clipboard && navigator.clipboard.writeText){
           navigator.clipboard.writeText(url).then(function(){
             alert('共有URLをコピーしました');
