@@ -8211,16 +8211,22 @@ body.preview-selected-only .cm-group-count{
 </style>
 
 
-<style id="cm-name-spacing-fix-v10">
-/* 英語と日本語の間に余白 */
-.article-name-en{
-  margin-bottom: 4px !important;
+<style id="cm-name-spacing-fix-v17">
+:root{ --cm-name-lang-gap: 14px; }
+.article-name .cm-name-en,
+.article-name .cm-name-ja{
   display:block;
 }
-.article-name-ja{
-  margin-top: 4px !important;
-  display:block;
+body.show-name-en.show-name-ja .article-name .cm-name-en{
+  margin-bottom: var(--cm-name-lang-gap) !important;
 }
+body.show-name-en.show-name-ja .article-name .cm-name-ja{
+  margin-top: 0 !important;
+}
+#cmNameGapWrap{ margin-top:8px; }
+#cmNameGapWrap.is-hidden{ display:none !important; }
+#cmNameGapWrap input[type="range"]{ width:100%; }
+#cmNameGapValue{ margin-left:6px; font-size:12px; }
 </style>
 
 </head>
@@ -12231,7 +12237,8 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     groupTitleBold: true,
     codeBold: false,
     showCitation: true,
-    citationPrintOnly: false
+    citationPrintOnly: false,
+    nameGap: 14
   };
   const INITIAL_SETTINGS = {};
   const PRESET_STORAGE_KEY = 'copicOwnedSharePresets_v1';
@@ -12305,6 +12312,7 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     const showNameJaEl = panel.querySelector('#cmShowNameJa');
     const showCitationEl = panel.querySelector('#cmShowCitation');
     const citationPrintOnlyEl = panel.querySelector('#cmCitationPrintOnly');
+    const nameGapEl = panel.querySelector('#cmNameGap');
     return {
       fit: fitEl ? fitEl.getAttribute('data-cm-print-fit') : DEFAULT_SETTINGS.fit,
       paper: paperEl ? paperEl.value : DEFAULT_SETTINGS.paper,
@@ -12328,7 +12336,8 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
       groupTitleBold: groupTitleBoldEl ? groupTitleBoldEl.checked : DEFAULT_SETTINGS.groupTitleBold,
       codeBold: codeBoldEl ? codeBoldEl.checked : DEFAULT_SETTINGS.codeBold,
       showCitation: showCitationEl ? showCitationEl.checked : DEFAULT_SETTINGS.showCitation,
-      citationPrintOnly: citationPrintOnlyEl ? citationPrintOnlyEl.checked : DEFAULT_SETTINGS.citationPrintOnly
+      citationPrintOnly: citationPrintOnlyEl ? citationPrintOnlyEl.checked : DEFAULT_SETTINGS.citationPrintOnly,
+      nameGap: nameGapEl ? Number(nameGapEl.value) : DEFAULT_SETTINGS.nameGap
     };
   }
   function getEffectiveSettings(settings){
@@ -12359,6 +12368,7 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     document.documentElement.style.setProperty('--cm-group-gap', ((s.groupGap ?? DEFAULT_SETTINGS.groupGap)) + 'px');
     document.documentElement.style.setProperty('--cm-code-name-gap', ((s.codeNameGap ?? DEFAULT_SETTINGS.codeNameGap)) + 'px');
     document.documentElement.style.setProperty('--cm-text-align', s.textAlign || DEFAULT_SETTINGS.textAlign);
+    document.documentElement.style.setProperty('--cm-name-lang-gap', ((s.nameGap ?? DEFAULT_SETTINGS.nameGap)) + 'px');
     document.documentElement.style.setProperty('--cm-print-cols', String((s.multiColumns ?? DEFAULT_SETTINGS.multiColumns)));
     document.documentElement.style.setProperty('--cm-title-weight', s.titleBold ? '700' : '400');
     document.documentElement.style.setProperty('--cm-group-title-weight', s.groupTitleBold ? '700' : '400');
@@ -12381,7 +12391,7 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     updateCitationPlacement(s);
     updateSizeLabels(s);
     updateMultiColumnsControlState(s);
-    updateMultiColumnsControlState(s);
+    updateNameGapControlState(s);
   }
   function updateSizeLabels(settings){
     const s = settings || readSettingsFromPanel();
@@ -12439,6 +12449,8 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     if(titleGapEl) titleGapEl.value = String(s.titleGap);
     if(groupGapEl) groupGapEl.value = String(s.groupGap);
     if(codeNameGapEl) codeNameGapEl.value = String(s.codeNameGap);
+    const nameGapEl = panel.querySelector('#cmNameGap');
+    if(nameGapEl) nameGapEl.value = String(s.nameGap ?? DEFAULT_SETTINGS.nameGap);
     if(multiColsEl) multiColsEl.value = String(s.multiColumns);
     panel.querySelectorAll('input[name="cmMultiFontMode"]').forEach(function(el){ el.checked = (el.value === (s.multiAutoFonts ? 'auto' : 'manual')); });
     const titleBoldEl = panel.querySelector('#cmTitleBold');
@@ -12590,6 +12602,9 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     if(Number(s.codeNameGap) !== Number(DEFAULT_SETTINGS.codeNameGap)){
       params.set('cg', String(s.codeNameGap));
     }
+    if(Number(s.nameGap) !== Number(DEFAULT_SETTINGS.nameGap)){
+      params.set('ng', String(s.nameGap));
+    }
     if(String(s.textAlign || 'center') !== String(DEFAULT_SETTINGS.textAlign || 'center')){
       params.set('a', String(s.textAlign || 'center') === 'left' ? 'l' : 'c');
     }
@@ -12664,6 +12679,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
       titleGap: Number(params.get('tg') || params.get('titleGap') || DEFAULT_SETTINGS.titleGap),
       groupGap: Number(params.get('gg') || params.get('groupGap') || DEFAULT_SETTINGS.groupGap),
       codeNameGap: Number(params.get('cg') || params.get('codeNameGap') || DEFAULT_SETTINGS.codeNameGap),
+      nameGap: Number(params.get('ng') || params.get('nameGap') || DEFAULT_SETTINGS.nameGap),
       textAlign: params.get('a') ? (params.get('a') === 'l' ? 'left' : 'center') : (params.get('textAlign') === 'left' ? 'left' : DEFAULT_SETTINGS.textAlign),
       multiColumns: Number(params.get('cl') || params.get('cols') || DEFAULT_SETTINGS.multiColumns),
       multiAutoFonts: params.get('af') === null ? (params.get('multiAutoFonts') === null ? DEFAULT_SETTINGS.multiAutoFonts : params.get('multiAutoFonts') !== '0') : params.get('af') !== '0',
@@ -12701,6 +12717,26 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
   }
 
   
+
+  function updateNameGapControlState(settings){
+    if(!panel) return;
+    const s = settings || readSettingsFromPanel();
+    const wrap = panel.querySelector('#cmNameGapWrap');
+    const input = panel.querySelector('#cmNameGap');
+    const value = panel.querySelector('#cmNameGapValue');
+    const show = !!s.showNames && !!s.showNameEn && !!s.showNameJa;
+    if(wrap) wrap.classList.toggle('is-hidden', !show);
+    if(input){
+      input.disabled = !show;
+      if(show){
+        document.documentElement.style.setProperty('--cm-name-lang-gap', input.value + 'px');
+      }else{
+        document.documentElement.style.setProperty('--cm-name-lang-gap', '14px');
+      }
+    }
+    if(value && input) value.textContent = input.value + 'px';
+  }
+
 function updateMultiColumnsControlState(settings){
     if(!panel) return;
     const s = settings || readSettingsFromPanel();
@@ -12918,6 +12954,10 @@ function updateMultiColumnsControlState(settings){
                   '<label><input type="checkbox" id="cmShowNameEn" checked> 英語表記</label>',
                   '<label><input type="checkbox" id="cmShowNameJa"> 日本語表記</label>',
                 '</div>',
+                '<div id="cmNameGapWrap" class="is-hidden">',
+                  '<label for="cmNameGap">英語表記、日本語表記の間 <span id="cmNameGapValue">14px</span></label>',
+                  '<input type="range" id="cmNameGap" min="0" max="40" step="1" value="14">',
+                '</div>',
                 '<div class="cm-align-row" id="cmTextAlignWrap">',
                   '<label><input type="radio" name="cmTextAlign" value="center" checked> 中央揃え</label>',
                   '<label><input type="radio" name="cmTextAlign" value="left"> 左揃え</label>',
@@ -13025,12 +13065,15 @@ function updateMultiColumnsControlState(settings){
     const codeBoldEl = panel.querySelector('#cmCodeBold');
     const multiFontModeEls = panel.querySelectorAll('input[name="cmMultiFontMode"]');
     const textAlignEls = panel.querySelectorAll('input[name="cmTextAlign"]');
+    const nameGapEl = panel.querySelector('#cmNameGap');
     [paperEl, showNamesEl, showNameEnEl, showNameJaEl, showCitationEl, citationPrintOnlyEl, titleBoldEl, groupTitleBoldEl, codeBoldEl].forEach(function(el){ if(el) el.addEventListener('change', refreshSettings); });
+    if(nameGapEl) nameGapEl.addEventListener('input', function(){ updateNameGapControlState(readSettingsFromPanel()); });
     multiFontModeEls.forEach(function(el){ el.addEventListener('change', refreshSettings); });
     textAlignEls.forEach(function(el){ el.addEventListener('change', refreshSettings); });
     [titleSizeEl, groupTitleSizeEl, codeSizeEl, nameSizeEl, lineGapEl, titleGapEl, groupGapEl, codeNameGapEl, multiColsEl].forEach(function(el){ if(el) el.addEventListener('input', refreshSettings); });
     syncPanelFromSettings(INITIAL_SETTINGS);
     refreshSettings();
+    updateNameGapControlState(readSettingsFromPanel());
     renderPresetList();
 
     panel.addEventListener('input', function(e){
@@ -13073,7 +13116,8 @@ function updateMultiColumnsControlState(settings){
           lineGap: INITIAL_SETTINGS.lineGap,
           titleGap: INITIAL_SETTINGS.titleGap,
           groupGap: INITIAL_SETTINGS.groupGap,
-          codeNameGap: INITIAL_SETTINGS.codeNameGap
+          codeNameGap: INITIAL_SETTINGS.codeNameGap,
+          nameGap: INITIAL_SETTINGS.nameGap
         });
         syncPanelFromSettings(resetSettings);
         refreshSettings();
