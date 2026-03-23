@@ -8138,6 +8138,37 @@ body.preview-selected-only .cm-group-count{
 }
 </style>
 
+
+<style id="cm-mobile-menuicon-force-remove">
+@media screen and (max-width: 768px){
+  /* よくあるハンバーガー全部潰す */
+  .menu-icon,
+  .hamburger,
+  .hamburger-menu,
+  .nav-toggle,
+  .menu-toggle,
+  .title-bar,
+  .title-bar-right,
+  .title-bar-left,
+  .top-bar,
+  .top-bar-right,
+  .top-bar-left,
+  .global-nav,
+  .sp-nav,
+  .pc-nav,
+  header,
+  header *[class*="menu"],
+  header *[class*="nav"],
+  header button,
+  header a,
+  /* SVGアイコン系 */
+  svg,
+  svg *{
+    display:none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
