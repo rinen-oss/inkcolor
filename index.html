@@ -7351,13 +7351,6 @@ body.hide-bottom-rule hr:last-of-type{
 .color-manager-panel.is-share-locked .cm-lock-on-share select{
   pointer-events:none !important;
 }
-body.share-locked-view .color-manager-panel{
-  display:none !important;
-}
-body.share-locked-view .mihon .cm-card-toggle,
-body.share-locked-view .cm-inline-group-actions{
-  display:none !important;
-}
 
 .color-manager-panel .cm-inline-pairs{
   display:flex;
@@ -12261,6 +12254,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     const params = new URLSearchParams();
     const s = readSettingsFromPanel();
     const colors = Array.from(owned).sort();
+    params.set('share', '1');
     if(colors.length) params.set('colors', colors.join(','));
     params.set('view', document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal');
     params.set('fit', s.fit);
@@ -12291,8 +12285,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
   }
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
-    isShareLocked = params.toString().length > 0;
-    document.body.classList.toggle('share-locked-view', isShareLocked);
+    isShareLocked = params.get('share') === '1';
     const colors = params.get('colors');
     if(colors){
       owned.clear();
@@ -12633,7 +12626,10 @@ function updateMultiColumnsControlState(settings){
     }
     statusEl = panel.querySelector('#cmOwnedCount');
     panel.querySelector('#cmTotalCount').textContent = String(cards.length);
-    if(isShareLocked) panel.classList.add('is-share-locked');
+    if(isShareLocked){
+      panel.classList.add('is-share-locked');
+      panel.hidden = true;
+    }
 
     document.querySelectorAll('[data-cm-print]').forEach(function(chk){
       chk.addEventListener('change', function(e){
@@ -12964,15 +12960,14 @@ function updateMultiColumnsControlState(settings){
       card.appendChild(previewBtn);
       card.addEventListener('click', function(e){
         if(e.target.closest('.cm-preview-btn')) return;
-        e.preventDefault();
         if(isShareLocked) return;
+        e.preventDefault();
         toggleOwned(code);
       });
     });
     cards = cards.filter(card => card.dataset.code);
   }
   function toggleOwned(code){
-    if(isShareLocked) return;
     if(owned.has(code)) owned.delete(code); else owned.add(code);
     saveOwned();
     refreshUI();
