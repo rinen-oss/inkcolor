@@ -7968,6 +7968,32 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 <meta name="twitter:site" content="@IC_korisu" />
 <meta name="twitter:title" content="コピックインクカラーリスト 358colors | コピック アルコールインクアート情報サイト">
 <meta name="twitter:description" content="コピックインクのカラーラインナップは全358色。 1色でもアルコールインクアートならではの濃淡をお楽...">
+
+<style>
+
+</style>
+
+
+<style id="cm-series-count-fix">
+.iromihon h2 .cm-series-code{
+  display:inline-block;
+}
+.iromihon h2 .color-count{
+  display:inline-block;
+  font-size:10pt !important;
+  font-weight:400 !important;
+  color:#888 !important;
+  letter-spacing:0 !important;
+  margin-left:0 !important;
+  position:relative;
+  top:1px;
+}
+body.preview-selected-only .iromihon h2 .color-count,
+body.print-selected-only .iromihon h2 .color-count{
+  display:none !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -12933,6 +12959,13 @@ function updateMultiColumnsControlState(settings){
       const group = h2.childNodes[0] ? h2.childNodes[0].textContent.trim() : h2.textContent.trim();
       if(!group || h2.querySelector('.cm-inline-group-actions')) return;
       h2.setAttribute('data-cm-group', group);
+      if(!h2.querySelector('.cm-group-owned-count')){
+        const countEl = document.createElement('span');
+        countEl.className = 'cm-group-owned-count';
+        countEl.setAttribute('data-cm-group-count', group);
+        countEl.textContent = '0';
+        h2.appendChild(countEl);
+      }
       const wrap = document.createElement('span');
       wrap.className = 'cm-inline-group-actions';
       wrap.innerHTML = '<button type="button">チェック</button><button type="button">外す</button>';
@@ -13079,6 +13112,14 @@ function updateMultiColumnsControlState(settings){
       const btn = card.querySelector('.cm-card-toggle');
       if(btn) btn.textContent = isOwned ? '外す' : '囲む';
     });
+    document.querySelectorAll('.iromihon h2[data-cm-group]').forEach(function(h2){
+      const group = h2.getAttribute('data-cm-group') || '';
+      const countEl = h2.querySelector('.cm-group-owned-count');
+      if(!countEl) return;
+      const n = cards.filter(card => card.dataset.group === group && owned.has(card.dataset.code)).length;
+      countEl.textContent = String(n);
+      countEl.style.display = (document.body.classList.contains('preview-selected-only') || document.body.classList.contains('print-selected-only')) ? 'none' : 'inline-block';
+    });
     if(statusEl) statusEl.textContent = String(owned.size);
     applyPrintVisibility();
     refreshGroups();
@@ -13105,6 +13146,83 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
   document.body.classList.toggle('print-only', e.target.checked);
 });
 
+</script>
+
+
+<script id="cm-series-count-script-fix">
+(function(){
+  function getOwnedCountForHeader(h2){
+    var app = h2.nextElementSibling;
+    if(!app) return 0;
+    return app.querySelectorAll('.mihon.is-owned').length;
+  }
+
+  function getBaseCode(h2){
+    if(h2.dataset.cmBaseCode) return h2.dataset.cmBaseCode;
+    var txt = (h2.textContent || '').replace(/\s+/g,' ').trim();
+    var m = txt.match(/^[A-Z]+/);
+    var base = m ? m[0] : txt.replace(/\d+/g,'').trim();
+    h2.dataset.cmBaseCode = base || txt;
+    return h2.dataset.cmBaseCode;
+  }
+
+  function refreshOneHeader(h2){
+    if(!h2) return;
+    var actions = h2.querySelector('.cm-inline-group-actions');
+    var base = getBaseCode(h2);
+    var count = getOwnedCountForHeader(h2);
+
+    var codeSpan = h2.querySelector('.cm-series-code');
+    if(!codeSpan){
+      codeSpan = document.createElement('span');
+      codeSpan.className = 'cm-series-code';
+    }
+    codeSpan.textContent = base;
+
+    var countSpan = h2.querySelector('.color-count');
+    if(!countSpan){
+      countSpan = document.createElement('span');
+      countSpan.className = 'color-count';
+    }
+    countSpan.textContent = ' ' + String(count);
+
+    // rebuild heading content so count is never fused into title text node
+    h2.textContent = '';
+    h2.appendChild(codeSpan);
+    h2.appendChild(countSpan);
+    if(actions){
+      h2.appendChild(document.createTextNode(' '));
+      h2.appendChild(actions);
+    }
+  }
+
+  function refreshAllHeaders(){
+    document.querySelectorAll('.iromihon > h2').forEach(refreshOneHeader);
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    refreshAllHeaders();
+
+    // Update after clicks/changes that may toggle ownership or mode
+    document.addEventListener('click', function(){
+      setTimeout(refreshAllHeaders, 0);
+    }, true);
+    document.addEventListener('change', function(){
+      setTimeout(refreshAllHeaders, 0);
+    }, true);
+
+    // Observe class changes / DOM changes
+    var mo = new MutationObserver(function(){
+      refreshAllHeaders();
+    });
+    mo.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  });
+})();
 </script>
 
 </body>
