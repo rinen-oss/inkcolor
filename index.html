@@ -7340,6 +7340,18 @@ body.hide-bottom-rule hr:last-of-type{
   pointer-events:none !important;
 }
 
+body.cm-share-view .color-manager-panel{
+  display:none !important;
+}
+body.cm-share-view .mihon .cm-card-toggle,
+body.cm-share-view .cm-inline-group-actions,
+body.cm-share-view .cm-inline-check{
+  display:none !important;
+}
+body.cm-share-view .mihon{
+  cursor:default !important;
+}
+
 .color-manager-panel.is-share-locked .cm-share-lock-note{
   display:block;
 }
@@ -12301,6 +12313,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
     isShareLocked = params.toString().length > 0;
+    document.body.classList.toggle('cm-share-view', isShareLocked);
     const colors = params.get('colors');
     if(colors){
       owned.clear();
@@ -12441,7 +12454,7 @@ function updateMultiColumnsControlState(settings){
     presets.forEach(function(preset, index){
       const row = document.createElement('div');
       row.className = 'cm-preset-item';
-      row.innerHTML = '<strong></strong><div class="cm-preset-actions"><button type="button" data-cm="preset-load" data-index="'+index+'">開く</button><button type="button" data-cm="preset-copy" data-index="'+index+'">URLコピー</button><button type="button" data-cm="preset-delete" data-index="'+index+'">削除</button></div>';
+      row.innerHTML = '<strong></strong><div class="cm-preset-actions"><button type="button" data-cm="preset-load" data-index="'+index+'">リンクを開く</button><button type="button" data-cm="preset-copy" data-index="'+index+'">リンクをコピー</button><button type="button" data-cm="preset-delete" data-index="'+index+'">削除</button></div>';
       row.querySelector('strong').textContent = preset.name || ('保存' + (index + 1));
       list.appendChild(row);
     });
@@ -12477,7 +12490,7 @@ function updateMultiColumnsControlState(settings){
     const preset = presets[index];
     if(!preset) return;
     if(action === 'preset-load'){
-      location.href = preset.url;
+      window.open(preset.url, '_blank', 'noopener');
     }else if(action === 'preset-copy'){
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(preset.url).then(function(){
@@ -12515,10 +12528,10 @@ function updateMultiColumnsControlState(settings){
           '<div class="cm-row cm-row--toolbar">',
             '<button type="button" data-cm="all-on">全色チェック</button>',
             '<button type="button" data-cm="all-off">全色外す</button>',
-            '<button type="button" data-cm="preview-selected">選択色プレビュー</button>',
+            '<button type="button" data-cm="preview-selected">プレビューモードのリンク</button>',
             '<button type="button" data-cm="preview-reset">通常表示に戻す</button>',
             '<button type="button" data-cm="print-selected">選択色だけ印刷</button>',
-            '<button type="button" data-cm="copy-share-url" class="cm-preview-hide">共有URLをコピー</button>',
+            '<button type="button" data-cm="copy-share-url" class="cm-preview-hide">共有URLコピーのリンク</button>',
             '<button type="button" data-cm="load-file" class="cm-preview-hide">JSON読み込み</button><input class="cm-file" type="file" accept="application/json,.json" hidden>',
             '<button type="button" data-cm="download-file" class="cm-preview-hide">JSON保存</button>',
           '</div>',
@@ -12556,7 +12569,7 @@ function updateMultiColumnsControlState(settings){
               '<div class="cm-details-body">',
                 '<div class="cm-preset-row">',
                   '<input type="text" id="cmPresetName" placeholder="保存名（例：ワークショップ用）" maxlength="30">',
-                  '<button type="button" data-cm="preset-save">今のURLを保存</button>',
+                  '<button type="button" data-cm="preset-save">共有URL保存のリンク</button>',
                 '</div>',
                 '<div class="cm-preset-list" id="cmPresetList"></div>',
               '</div>',
@@ -12793,16 +12806,14 @@ function updateMultiColumnsControlState(settings){
     const titleNote = document.querySelector('.cm-source-note--title');
     const notesNote = document.querySelector('.cm-source-note--notes');
     const footerNote = document.querySelector('.cm-print-footer-citation');
-    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
-    const hasNoteRows = ['paper-type','ink-ratio'].some(function(key){ return enabled.has(key); });
     const showOnScreen = !!s.showCitation;
     const showFooter = !!s.citationPrintOnly;
 
     if(titleNote){
-      titleNote.style.display = showOnScreen && !hasNoteRows ? '' : 'none';
+      titleNote.style.display = 'none';
     }
     if(notesNote){
-      notesNote.style.display = showOnScreen && hasNoteRows ? '' : 'none';
+      notesNote.style.display = showOnScreen ? '' : 'none';
     }
     if(footerNote){
       footerNote.style.display = showFooter ? 'block' : 'none';
@@ -12955,6 +12966,7 @@ function updateMultiColumnsControlState(settings){
       toggleBtn.setAttribute('aria-label', code + ' を所持チェック');
       toggleBtn.addEventListener('click', function(e){
         e.preventDefault(); e.stopPropagation();
+        if(isShareLocked) return;
         toggleOwned(code);
       });
       const previewBtn = document.createElement('button');
@@ -12969,6 +12981,7 @@ function updateMultiColumnsControlState(settings){
       card.appendChild(previewBtn);
       card.addEventListener('click', function(e){
         if(e.target.closest('.cm-preview-btn')) return;
+        if(isShareLocked) return;
         e.preventDefault();
         toggleOwned(code);
       });
@@ -12976,10 +12989,12 @@ function updateMultiColumnsControlState(settings){
     cards = cards.filter(card => card.dataset.code);
   }
   function toggleOwned(code){
+    if(isShareLocked) return;
     if(owned.has(code)) owned.delete(code); else owned.add(code);
     saveOwned();
     refreshUI();
   }
+
   function updateGroupCounts(){
     document.querySelectorAll('.iromihon h2').forEach(function(h2){
       const app = h2.nextElementSibling;
