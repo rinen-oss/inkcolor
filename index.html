@@ -12314,6 +12314,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
     isShareLocked = params.get('share') === '1';
+    applyShareLockUI();
     const colors = params.get('colors');
     if(colors){
       owned.clear();
@@ -12511,6 +12512,19 @@ function updateMultiColumnsControlState(settings){
     }
   }
   let isShareLocked = false;
+  function applyShareLockUI(){
+    document.body.classList.toggle('cm-share-locked', !!isShareLocked);
+    if(panel){
+      panel.classList.toggle('is-share-locked', !!isShareLocked);
+      panel.style.display = isShareLocked ? 'none' : '';
+    }
+    document.querySelectorAll('.mihon .cm-card-toggle').forEach(function(el){
+      el.style.display = isShareLocked ? 'none' : '';
+    });
+    document.querySelectorAll('.cm-inline-group-actions').forEach(function(el){
+      el.style.display = isShareLocked ? 'none' : '';
+    });
+  }
   function createPanel(){
     const calloutWrap = document.querySelector('.cm-inline-print-option--callout');
     if(!calloutWrap) return;
@@ -12657,7 +12671,7 @@ function updateMultiColumnsControlState(settings){
     }
     statusEl = panel.querySelector('#cmOwnedCount');
     panel.querySelector('#cmTotalCount').textContent = String(cards.length);
-    if(isShareLocked){ panel.classList.add('is-share-locked'); panel.style.display = 'none'; }
+    applyShareLockUI();
 
     document.querySelectorAll('[data-cm-print]').forEach(function(chk){
       chk.addEventListener('change', function(e){
@@ -12891,13 +12905,15 @@ function updateMultiColumnsControlState(settings){
       wrap.className = 'cm-inline-group-actions';
       wrap.innerHTML = '<button type="button">チェック</button><button type="button">外す</button>';
       const btns = wrap.querySelectorAll('button');
-      if(isShareLocked) wrap.style.display = 'none';
+      if(isShareLocked) wrap.style.display = 'none'; else wrap.style.display = '';
       btns[0].addEventListener('click', function(){
+        if(isShareLocked) return;
         cards.filter(card => card.dataset.group === group).forEach(card => owned.add(card.dataset.code));
         saveOwned();
         refreshUI();
       });
       btns[1].addEventListener('click', function(){
+        if(isShareLocked) return;
         cards.filter(card => card.dataset.group === group).forEach(card => owned.delete(card.dataset.code));
         saveOwned();
         refreshUI();
@@ -12983,7 +12999,7 @@ function updateMultiColumnsControlState(settings){
         e.preventDefault(); e.stopPropagation();
         if(card.dataset.href) window.open(card.dataset.href, '_blank');
       });
-      if(isShareLocked) toggleBtn.style.display = 'none';
+      if(isShareLocked) toggleBtn.style.display = 'none'; else toggleBtn.style.display = '';
       card.appendChild(toggleBtn);
       card.appendChild(previewBtn);
       card.addEventListener('click', function(e){
@@ -13043,10 +13059,7 @@ function updateMultiColumnsControlState(settings){
     owned = loadOwned();
     createPanel();
     applyStateFromURL();
-    if(panel && isShareLocked){
-      panel.classList.add('is-share-locked');
-      panel.style.display = 'none';
-    }
+    applyShareLockUI();
     applyPrintVisibility();
     applyPrintFit();
     refreshUI();
