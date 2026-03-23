@@ -12350,86 +12350,142 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     document.querySelectorAll('[data-cm-print]').forEach(function(el){ el.checked = checked; });
     applyPrintVisibility();
   }
+  function toUrlSafeBase64(binaryString){
+    return btoa(binaryString).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function fromUrlSafeBase64(value){
+    if(!value) return '';
+    const normalized = String(value).replace(/-/g,'+').replace(/_/g,'/');
+    const pad = normalized.length % 4 ? '='.repeat(4 - (normalized.length % 4)) : '';
+    try{
+      return atob(normalized + pad);
+    }catch(e){
+      return '';
+    }
+  }
+  function encodeOwnedShort(){
+    const bytes = new Uint8Array(Math.ceil(cards.length / 8));
+    cards.forEach(function(card, index){
+      if(owned.has(card.dataset.code)){
+        bytes[index >> 3] |= (1 << (index & 7));
+      }
+    });
+    let binary = '';
+    bytes.forEach(function(byte){ binary += String.fromCharCode(byte); });
+    return toUrlSafeBase64(binary);
+  }
+  function decodeOwnedShort(value){
+    const binary = fromUrlSafeBase64(value);
+    if(!binary) return null;
+    const result = new Set();
+    for(let i = 0; i < cards.length; i += 1){
+      const byte = binary.charCodeAt(i >> 3) || 0;
+      if(byte & (1 << (i & 7))){
+        result.add(cards[i].dataset.code);
+      }
+    }
+    return result;
+  }
   function buildShareURL(forcePreview){
     const params = new URLSearchParams();
     const s = readSettingsFromPanel();
-    const colors = Array.from(owned).sort();
-    if(colors.length) params.set('colors', colors.join(','));
+    const shortColors = encodeOwnedShort();
+    if(shortColors) params.set('c', shortColors);
     const previewMode = forcePreview === undefined ? true : !!forcePreview;
-    params.set('view', previewMode ? 'preview' : (document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal'));
-    params.set('fit', s.fit);
-    params.set('paper', s.paper);
-    params.set('names', s.showNames ? '1' : '0');
-    params.set('nameMode', s.nameMode || 'en');
-    params.set('showNameEn', s.showNameEn ? '1' : '0');
-    params.set('showNameJa', s.showNameJa ? '1' : '0');
-    params.set('titleSize', String(s.titleSize));
-    params.set('groupTitleSize', String(s.groupTitleSize));
-    params.set('codeSize', String(s.codeSize));
-    params.set('nameSize', String(s.nameSize));
-    params.set('lineGap', String(s.lineGap));
-    params.set('titleGap', String(s.titleGap));
-    params.set('groupGap', String(s.groupGap));
-    params.set('codeNameGap', String(s.codeNameGap));
-    params.set('textAlign', String(s.textAlign || 'center'));
-    params.set('cols', String(s.multiColumns));
-    params.set('multiAutoFonts', s.multiAutoFonts ? '1' : '0');
-    params.set('titleBold', s.titleBold ? '1' : '0');
-    params.set('groupTitleBold', s.groupTitleBold ? '1' : '0');
-    params.set('codeBold', s.codeBold ? '1' : '0');
-    params.set('citation', s.showCitation ? '1' : '0');
-    params.set('citationPrintOnly', s.citationPrintOnly ? '1' : '0');
+    params.set('v', previewMode ? 'p' : (document.body.classList.contains('preview-selected-only') ? 'p' : 'n'));
+    params.set('f', s.fit === 'multi' ? 'm' : 'o');
+    params.set('p', s.paper === 'a3' ? '3' : '4');
+    params.set('n', s.showNames ? '1' : '0');
+    params.set('ne', s.showNameEn ? '1' : '0');
+    params.set('nj', s.showNameJa ? '1' : '0');
+    params.set('ts', String(s.titleSize));
+    params.set('gs', String(s.groupTitleSize));
+    params.set('cs', String(s.codeSize));
+    params.set('ns', String(s.nameSize));
+    params.set('lg', String(s.lineGap));
+    params.set('tg', String(s.titleGap));
+    params.set('gg', String(s.groupGap));
+    params.set('cg', String(s.codeNameGap));
+    params.set('a', String(s.textAlign || 'center') === 'left' ? 'l' : 'c');
+    params.set('cl', String(s.multiColumns));
+    params.set('af', s.multiAutoFonts ? '1' : '0');
+    params.set('tb', s.titleBold ? '1' : '0');
+    params.set('gb', s.groupTitleBold ? '1' : '0');
+    params.set('cb', s.codeBold ? '1' : '0');
+    params.set('ct', s.showCitation ? '1' : '0');
+    params.set('cp', s.citationPrintOnly ? '1' : '0');
     const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); });
-    if(enabled.length) params.set('text', enabled.join(','));
+    if(enabled.length) params.set('t', toUrlSafeBase64(unescape(encodeURIComponent(enabled.join(',')))));
+    const bg = localStorage.getItem('bgColor');
+    if(bg && /^#[0-9a-fA-F]{6}$/.test(bg) && bg.toLowerCase() !== '#ffffff'){
+      params.set('bg', bg.slice(1));
+    }
     return location.origin + location.pathname + '?' + params.toString();
   }
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
     isShareLocked = params.toString().length > 0;
     document.body.classList.toggle('cm-share-view', isShareLocked);
+
+    const shortColors = params.get('c');
     const colors = params.get('colors');
-    if(colors){
+    const decodedOwned = shortColors ? decodeOwnedShort(shortColors) : null;
+    if(decodedOwned || colors){
       owned.clear();
-      const validCodes = new Set(cards.map(function(card){ return card.dataset.code; }));
-      colors.split(',').map(function(v){ return v.trim(); }).filter(Boolean).forEach(function(code){ if(validCodes.has(code)) owned.add(code); });
+      if(decodedOwned){
+        decodedOwned.forEach(function(code){ owned.add(code); });
+      }else if(colors){
+        const validCodes = new Set(cards.map(function(card){ return card.dataset.code; }));
+        colors.split(',').map(function(v){ return v.trim(); }).filter(Boolean).forEach(function(code){ if(validCodes.has(code)) owned.add(code); });
+      }
       saveOwned();
     }
+
     const settings = {
-      fit: params.get('fit') || DEFAULT_SETTINGS.fit,
-      paper: params.get('paper') === 'a3' ? 'a3' : DEFAULT_SETTINGS.paper,
-      showNames: params.get('names') === null ? DEFAULT_SETTINGS.showNames : params.get('names') !== '0',
+      fit: params.get('f') ? (params.get('f') === 'm' ? 'multi' : 'one') : (params.get('fit') || DEFAULT_SETTINGS.fit),
+      paper: params.get('p') ? (params.get('p') === '3' ? 'a3' : 'a4') : (params.get('paper') === 'a3' ? 'a3' : DEFAULT_SETTINGS.paper),
+      showNames: params.get('n') === null ? (params.get('names') === null ? DEFAULT_SETTINGS.showNames : params.get('names') !== '0') : params.get('n') !== '0',
       nameMode: params.get('nameMode') === 'ja' ? 'ja' : DEFAULT_SETTINGS.nameMode,
-      showNameEn: params.get('showNameEn') === null ? DEFAULT_SETTINGS.showNameEn : params.get('showNameEn') !== '0',
-      showNameJa: params.get('showNameJa') === null ? DEFAULT_SETTINGS.showNameJa : params.get('showNameJa') !== '0',
+      showNameEn: params.get('ne') === null ? (params.get('showNameEn') === null ? DEFAULT_SETTINGS.showNameEn : params.get('showNameEn') !== '0') : params.get('ne') !== '0',
+      showNameJa: params.get('nj') === null ? (params.get('showNameJa') === null ? DEFAULT_SETTINGS.showNameJa : params.get('showNameJa') !== '0') : params.get('nj') !== '0',
       hideBottomRule: true,
-      titleSize: Number(params.get('titleSize') || DEFAULT_SETTINGS.titleSize),
-      groupTitleSize: Number(params.get('groupTitleSize') || DEFAULT_SETTINGS.groupTitleSize),
-      codeSize: Number(params.get('codeSize') || DEFAULT_SETTINGS.codeSize),
-      nameSize: Number(params.get('nameSize') || DEFAULT_SETTINGS.nameSize),
-      lineGap: Number(params.get('lineGap') || DEFAULT_SETTINGS.lineGap),
-      titleGap: Number(params.get('titleGap') || DEFAULT_SETTINGS.titleGap),
-      groupGap: Number(params.get('groupGap') || DEFAULT_SETTINGS.groupGap),
-      codeNameGap: Number(params.get('codeNameGap') || DEFAULT_SETTINGS.codeNameGap),
-      textAlign: params.get('textAlign') === 'left' ? 'left' : DEFAULT_SETTINGS.textAlign,
-      multiColumns: Number(params.get('cols') || DEFAULT_SETTINGS.multiColumns),
-      multiAutoFonts: params.get('multiAutoFonts') === null ? DEFAULT_SETTINGS.multiAutoFonts : params.get('multiAutoFonts') !== '0',
-      titleBold: params.get('titleBold') === null ? DEFAULT_SETTINGS.titleBold : params.get('titleBold') !== '0',
-      groupTitleBold: params.get('groupTitleBold') === null ? DEFAULT_SETTINGS.groupTitleBold : params.get('groupTitleBold') !== '0',
-      codeBold: params.get('codeBold') === null ? DEFAULT_SETTINGS.codeBold : params.get('codeBold') !== '0',
-      showCitation: params.get('citation') === null ? DEFAULT_SETTINGS.showCitation : params.get('citation') !== '0',
-      citationPrintOnly: params.get('citationPrintOnly') === null ? DEFAULT_SETTINGS.citationPrintOnly : params.get('citationPrintOnly') !== '0'
+      titleSize: Number(params.get('ts') || params.get('titleSize') || DEFAULT_SETTINGS.titleSize),
+      groupTitleSize: Number(params.get('gs') || params.get('groupTitleSize') || DEFAULT_SETTINGS.groupTitleSize),
+      codeSize: Number(params.get('cs') || params.get('codeSize') || DEFAULT_SETTINGS.codeSize),
+      nameSize: Number(params.get('ns') || params.get('nameSize') || DEFAULT_SETTINGS.nameSize),
+      lineGap: Number(params.get('lg') || params.get('lineGap') || DEFAULT_SETTINGS.lineGap),
+      titleGap: Number(params.get('tg') || params.get('titleGap') || DEFAULT_SETTINGS.titleGap),
+      groupGap: Number(params.get('gg') || params.get('groupGap') || DEFAULT_SETTINGS.groupGap),
+      codeNameGap: Number(params.get('cg') || params.get('codeNameGap') || DEFAULT_SETTINGS.codeNameGap),
+      textAlign: params.get('a') ? (params.get('a') === 'l' ? 'left' : 'center') : (params.get('textAlign') === 'left' ? 'left' : DEFAULT_SETTINGS.textAlign),
+      multiColumns: Number(params.get('cl') || params.get('cols') || DEFAULT_SETTINGS.multiColumns),
+      multiAutoFonts: params.get('af') === null ? (params.get('multiAutoFonts') === null ? DEFAULT_SETTINGS.multiAutoFonts : params.get('multiAutoFonts') !== '0') : params.get('af') !== '0',
+      titleBold: params.get('tb') === null ? (params.get('titleBold') === null ? DEFAULT_SETTINGS.titleBold : params.get('titleBold') !== '0') : params.get('tb') !== '0',
+      groupTitleBold: params.get('gb') === null ? (params.get('groupTitleBold') === null ? DEFAULT_SETTINGS.groupTitleBold : params.get('groupTitleBold') !== '0') : params.get('gb') !== '0',
+      codeBold: params.get('cb') === null ? (params.get('codeBold') === null ? DEFAULT_SETTINGS.codeBold : params.get('codeBold') !== '0') : params.get('cb') !== '0',
+      showCitation: params.get('ct') === null ? (params.get('citation') === null ? DEFAULT_SETTINGS.showCitation : params.get('citation') !== '0') : params.get('ct') !== '0',
+      citationPrintOnly: params.get('cp') === null ? (params.get('citationPrintOnly') === null ? DEFAULT_SETTINGS.citationPrintOnly : params.get('citationPrintOnly') !== '0') : params.get('cp') !== '0'
     };
     syncPanelFromSettings(settings);
     applySettings(settings);
-    const text = params.get('text');
+
+    const shortText = params.get('t');
+    const text = shortText ? decodeURIComponent(escape(fromUrlSafeBase64(shortText))) : params.get('text');
     if(text){
-      const set = new Set(text.split(',').map(function(v){ return v.trim(); }).filter(Boolean));
+      const set = new Set(String(text).split(',').map(function(v){ return v.trim(); }).filter(Boolean));
       document.querySelectorAll('[data-cm-print]').forEach(function(el){
         el.checked = set.has(el.getAttribute('data-cm-print'));
       });
       applyPrintVisibility();
     }
-    if(params.get('view') === 'preview'){
+
+    const bg = params.get('bg');
+    if(bg && /^[0-9a-fA-F]{6}$/.test(bg)){
+      localStorage.setItem('bgColor', '#' + bg);
+    }
+
+    const view = params.get('v') || params.get('view');
+    if(view === 'p' || view === 'preview'){
       document.body.classList.add('preview-selected-only');
       document.body.classList.add('show-selected-only');
       refreshGroups();
