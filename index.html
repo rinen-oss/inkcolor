@@ -8068,6 +8068,21 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
 }
 </style>
 
+
+<style id="cm-hide-count-fix">
+/* プレビューモードで色タイトル横の数字非表示 */
+body.preview-selected-only .cm-group-count{
+  display:none !important;
+}
+
+/* 印刷時も非表示 */
+@media print{
+  .cm-group-count{
+    display:none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -12386,20 +12401,94 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     }
     return result;
   }
-  
-function buildShareURL(){
-  const base = location.origin + location.pathname;
-  const c = encodeURIComponent(exportColors());
-  return base + "?c=" + c;
-}
-);
-    if(enabled.length) params.set('t', toUrlSafeBase64(unescape(encodeURIComponent(enabled.join(',')))));
+
+  function buildShareURL(forcePreview){
+    const params = new URLSearchParams();
+    const s = readSettingsFromPanel();
+    const shortColors = encodeOwnedShort();
+    if(shortColors) params.set('c', shortColors);
+
+    const previewMode = forcePreview === undefined ? true : !!forcePreview;
+    if(previewMode) params.set('v', 'p');
+
+    if(s.fit !== DEFAULT_SETTINGS.fit){
+      params.set('f', s.fit === 'multi' ? 'm' : 'o');
+    }
+    if(s.paper !== DEFAULT_SETTINGS.paper){
+      params.set('p', s.paper === 'a3' ? '3' : '4');
+    }
+    if(!!s.showNames !== !!DEFAULT_SETTINGS.showNames){
+      params.set('n', s.showNames ? '1' : '0');
+    }
+    if(!!s.showNameEn !== !!DEFAULT_SETTINGS.showNameEn){
+      params.set('ne', s.showNameEn ? '1' : '0');
+    }
+    if(!!s.showNameJa !== !!DEFAULT_SETTINGS.showNameJa){
+      params.set('nj', s.showNameJa ? '1' : '0');
+    }
+    if(Number(s.titleSize) !== Number(DEFAULT_SETTINGS.titleSize)){
+      params.set('ts', String(s.titleSize));
+    }
+    if(Number(s.groupTitleSize) !== Number(DEFAULT_SETTINGS.groupTitleSize)){
+      params.set('gs', String(s.groupTitleSize));
+    }
+    if(Number(s.codeSize) !== Number(DEFAULT_SETTINGS.codeSize)){
+      params.set('cs', String(s.codeSize));
+    }
+    if(Number(s.nameSize) !== Number(DEFAULT_SETTINGS.nameSize)){
+      params.set('ns', String(s.nameSize));
+    }
+    if(Number(s.lineGap) !== Number(DEFAULT_SETTINGS.lineGap)){
+      params.set('lg', String(s.lineGap));
+    }
+    if(Number(s.titleGap) !== Number(DEFAULT_SETTINGS.titleGap)){
+      params.set('tg', String(s.titleGap));
+    }
+    if(Number(s.groupGap) !== Number(DEFAULT_SETTINGS.groupGap)){
+      params.set('gg', String(s.groupGap));
+    }
+    if(Number(s.codeNameGap) !== Number(DEFAULT_SETTINGS.codeNameGap)){
+      params.set('cg', String(s.codeNameGap));
+    }
+    if(String(s.textAlign || 'center') !== String(DEFAULT_SETTINGS.textAlign || 'center')){
+      params.set('a', String(s.textAlign || 'center') === 'left' ? 'l' : 'c');
+    }
+    if(Number(s.multiColumns) !== Number(DEFAULT_SETTINGS.multiColumns)){
+      params.set('cl', String(s.multiColumns));
+    }
+    if(!!s.multiAutoFonts !== !!DEFAULT_SETTINGS.multiAutoFonts){
+      params.set('af', s.multiAutoFonts ? '1' : '0');
+    }
+    if(!!s.titleBold !== !!DEFAULT_SETTINGS.titleBold){
+      params.set('tb', s.titleBold ? '1' : '0');
+    }
+    if(!!s.groupTitleBold !== !!DEFAULT_SETTINGS.groupTitleBold){
+      params.set('gb', s.groupTitleBold ? '1' : '0');
+    }
+    if(!!s.codeBold !== !!DEFAULT_SETTINGS.codeBold){
+      params.set('cb', s.codeBold ? '1' : '0');
+    }
+    if(!!s.showCitation !== !!DEFAULT_SETTINGS.showCitation){
+      params.set('ct', s.showCitation ? '1' : '0');
+    }
+    if(!!s.citationPrintOnly !== !!DEFAULT_SETTINGS.citationPrintOnly){
+      params.set('cp', s.citationPrintOnly ? '1' : '0');
+    }
+
+    const enabled = Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){
+      return el.getAttribute('data-cm-print');
+    });
+    if(enabled.length){
+      params.set('t', toUrlSafeBase64(unescape(encodeURIComponent(enabled.join(',')))));
+    }
+
     const bg = localStorage.getItem('bgColor');
     if(bg && /^#[0-9a-fA-F]{6}$/.test(bg) && bg.toLowerCase() !== '#ffffff'){
       params.set('bg', bg.slice(1));
     }
     return location.origin + location.pathname + '?' + params.toString();
   }
+
   function applyStateFromURL(){
     const params = new URLSearchParams(location.search);
     isShareLocked = params.toString().length > 0;
