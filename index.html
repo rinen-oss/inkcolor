@@ -7146,11 +7146,22 @@ body.hide-bottom-rule hr:last-of-type{
   margin-top:12px;
   margin-bottom:18px;
 }
-/* 印刷フッター引用は通常画面では出さず、印刷時のみ独立表示 */
+body.cm-citation-print-only .cm-source-note{
+  display:none;
+}
+body.show-citation-screen .cm-print-footer-citation{
+  display:block;
+}
+@media print{
+  .cm-source-note{ display:none !important; }
+  body.show-citation-print .cm-print-footer-citation{
+    display:block !important;
+  }
+}
 .cm-print-footer-citation{
-  display:none !important;
-  margin:0;
-  padding:0;
+  display:none;
+  margin-top:14px;
+  padding-left:2px;
   font-size:10px;
   line-height:1.45;
   color:#777;
@@ -7159,20 +7170,12 @@ body.hide-bottom-rule hr:last-of-type{
   break-inside:avoid;
 }
 @media print{
-  body.show-footer-citation .cm-print-footer-citation{
-    display:block !important;
-    position:fixed;
-    left:6mm;
-    right:6mm;
-    bottom:4mm;
-    z-index:9999;
-    margin:0;
-    padding:0;
+  .cm-print-footer-citation{
+    margin-top:8mm;
+    padding-left:0;
     font-size:8pt;
     line-height:1.35;
     color:#666;
-    text-align:left;
-    background:transparent;
   }
 }
 
@@ -12117,7 +12120,8 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
     document.body.classList.toggle('print-fit-one-page', s.fit === 'one');
     document.body.classList.toggle('print-fit-multi-page', s.fit !== 'one');
     document.body.classList.toggle('show-citation-screen', !!s.showCitation);
-    document.body.classList.toggle('show-footer-citation', !!s.citationPrintOnly);
+    document.body.classList.toggle('show-citation-print', !!s.showCitation && !!s.citationPrintOnly);
+    document.body.classList.toggle('cm-citation-print-only', !!s.citationPrintOnly);
     const pageH1 = document.querySelector('.page-head h1');
     if(pageH1 && originalH1Text){
       pageH1.textContent = originalH1Text;
@@ -12502,7 +12506,6 @@ function updateMultiColumnsControlState(settings){
             '<button type="button" data-cm="preview-selected">選択色プレビュー</button>',
             '<button type="button" data-cm="preview-reset">通常表示に戻す</button>',
             '<button type="button" data-cm="print-selected">選択色だけ印刷</button>',
-            '<button type="button" data-cm="copy-share-url" class="cm-preview-hide">共有URLをコピー</button>',
             '<button type="button" data-cm="load-file" class="cm-preview-hide">JSON読み込み</button><input class="cm-file" type="file" accept="application/json,.json" hidden>',
             '<button type="button" data-cm="download-file" class="cm-preview-hide">JSON保存</button>',
           '</div>',
@@ -12535,16 +12538,7 @@ function updateMultiColumnsControlState(settings){
                 '<div class="cm-mini" id="cmFontModeMini">1ページにまとめる / 複数ページで表示 のどちらでも、おまかせ・自分で調整を選べます。</div>',
               '</div>',
             '</details>',
-            '<details class="cm-details cm-preview-hide-panel" open>',
-              '<summary>共有URL保存</summary>',
-              '<div class="cm-details-body">',
-                '<div class="cm-preset-row">',
-                  '<input type="text" id="cmPresetName" placeholder="保存名（例：ワークショップ用）" maxlength="30">',
-                  '<button type="button" data-cm="preset-save">今のURLを保存</button>',
-                '</div>',
-                '<div class="cm-preset-list" id="cmPresetList"></div>',
-              '</div>',
-            '</details>',
+
             '<details class="cm-details cm-preview-hide-panel" open>',
               '<summary>表示</summary>',
               '<div class="cm-details-body">',
@@ -12776,21 +12770,12 @@ function updateMultiColumnsControlState(settings){
     const s = settings || readSettingsFromPanel();
     const titleNote = document.querySelector('.cm-source-note--title');
     const notesNote = document.querySelector('.cm-source-note--notes');
-    const footerNote = document.querySelector('.cm-print-footer-citation');
+    if(!titleNote || !notesNote) return;
     const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
     const hasNoteRows = ['paper-type','ink-ratio'].some(function(key){ return enabled.has(key); });
     const showOnScreen = !!s.showCitation;
-    const showFooter = !!s.citationPrintOnly;
-
-    if(titleNote){
-      titleNote.style.display = showOnScreen && !hasNoteRows ? '' : 'none';
-    }
-    if(notesNote){
-      notesNote.style.display = showOnScreen && hasNoteRows ? '' : 'none';
-    }
-    if(footerNote){
-      footerNote.style.display = showFooter ? 'block' : 'none';
-    }
+    titleNote.style.display = showOnScreen && !hasNoteRows ? '' : 'none';
+    notesNote.style.display = showOnScreen && hasNoteRows ? '' : 'none';
   }
 
   function updateNoteBoxState(){
