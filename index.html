@@ -8169,6 +8169,47 @@ body.preview-selected-only .cm-group-count{
 }
 </style>
 
+
+<style id="cm-mobile-header-delete-v8">
+@media screen and (max-width: 768px){
+  header,
+  .site-header,
+  .l-header,
+  .header-wrap,
+  .header-container,
+  .title-bar,
+  .top-bar,
+  .off-canvas-wrapper > header,
+  body > header:first-of-type{
+    display:none !important;
+  }
+  body{
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+}
+</style>
+
+
+<style id="cm-mobile-topbar-kill-v9">
+@media screen and (max-width: 768px){
+  .title-bar,
+  .top-bar,
+  .top-bar-right,
+  .top-bar-left,
+  .title-bar-right,
+  .title-bar-left,
+  .title-bar-title,
+  .menu-icon{
+    display:none !important;
+  }
+  body{
+    padding-top:0 !important;
+    margin-top:0 !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -13485,6 +13526,38 @@ document.getElementById('cmPrintOnly')?.addEventListener('change',e=>{
   }else{
     hideBrokenImages(document);
   }
+})();
+</script>
+
+
+<script id="cm-mobile-topbar-kill-js-v9">
+(function(){
+  function killTopMobileBar(){
+    if(window.innerWidth > 768) return;
+    var nodes = Array.from(document.querySelectorAll('body *'));
+    nodes.forEach(function(el){
+      try{
+        var cs = getComputedStyle(el);
+        var r = el.getBoundingClientRect();
+        var hasMenuIcon = !!el.querySelector('.menu-icon');
+        var isTopBarLike =
+          hasMenuIcon ||
+          el.classList.contains('title-bar') ||
+          el.classList.contains('top-bar') ||
+          (r.top <= 120 && r.height <= 120 && r.width >= window.innerWidth * 0.7 &&
+           (cs.position === 'fixed' || cs.position === 'sticky' || cs.position === 'relative'));
+        if(isTopBarLike && r.top <= 120){
+          el.style.display = 'none';
+        }
+      }catch(e){}
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', killTopMobileBar, {once:true});
+  }else{
+    killTopMobileBar();
+  }
+  window.addEventListener('resize', killTopMobileBar);
 })();
 </script>
 
