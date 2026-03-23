@@ -12319,7 +12319,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
       owned.clear();
       const validCodes = new Set(cards.map(function(card){ return card.dataset.code; }));
       colors.split(',').map(function(v){ return v.trim(); }).filter(Boolean).forEach(function(code){ if(validCodes.has(code)) owned.add(code); });
-      saveOwned();
+      if(!isShareLocked) saveOwned();
     }
     const settings = {
       fit: params.get('fit') || DEFAULT_SETTINGS.fit,
@@ -13042,6 +13042,11 @@ function updateMultiColumnsControlState(settings){
     detectInitialSettings();
     owned = loadOwned();
     createPanel();
+    applyStateFromURL();
+    if(panel && isShareLocked){
+      panel.classList.add('is-share-locked');
+      panel.style.display = 'none';
+    }
     applyPrintVisibility();
     applyPrintFit();
     refreshUI();
