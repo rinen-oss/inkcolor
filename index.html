@@ -12729,7 +12729,18 @@ function updateMultiColumnsControlState(settings){
         saveOwned();
         refreshUI();
       }else if(action === 'reset-font-sizes'){
-        syncPanelFromSettings(INITIAL_SETTINGS);
+        const currentSettings = readSettingsFromPanel();
+        const resetSettings = Object.assign({}, currentSettings, {
+          titleSize: INITIAL_SETTINGS.titleSize,
+          groupTitleSize: INITIAL_SETTINGS.groupTitleSize,
+          codeSize: INITIAL_SETTINGS.codeSize,
+          nameSize: INITIAL_SETTINGS.nameSize,
+          lineGap: INITIAL_SETTINGS.lineGap,
+          titleGap: INITIAL_SETTINGS.titleGap,
+          groupGap: INITIAL_SETTINGS.groupGap,
+          codeNameGap: INITIAL_SETTINGS.codeNameGap
+        });
+        syncPanelFromSettings(resetSettings);
         refreshSettings();
       }else if(action === 'preview-selected'){
         document.body.classList.add('preview-selected-only');
@@ -12807,8 +12818,10 @@ function updateMultiColumnsControlState(settings){
     const titleNote = document.querySelector('.cm-source-note--title');
     const notesNote = document.querySelector('.cm-source-note--notes');
     const footerNote = document.querySelector('.cm-print-footer-citation');
-    const showOnScreen = !!s.showCitation;
-    const showFooter = !!s.citationPrintOnly;
+    const enabled = new Set(Array.from(document.querySelectorAll('[data-cm-print]:checked')).map(function(el){ return el.getAttribute('data-cm-print'); }));
+    const hasVisibleText = enabled.size > 0;
+    const showOnScreen = !!s.showCitation && hasVisibleText;
+    const showFooter = !!s.citationPrintOnly && hasVisibleText;
 
     if(titleNote){
       titleNote.style.display = 'none';
@@ -12843,11 +12856,13 @@ function updateMultiColumnsControlState(settings){
       const key = el.getAttribute('data-print-block');
       const isOn = enabled.has(key);
       el.classList.toggle('print-hidden', !isOn);
+      el.style.display = (previewOrPrint && !isOn) ? 'none' : '';
     });
     document.querySelectorAll('[data-print-control-row]').forEach(function(row){
       const key = row.getAttribute('data-print-control-row');
       const isOn = enabled.has(key);
       row.classList.toggle('is-off', previewOrPrint && !isOn);
+      row.style.display = (previewOrPrint && !isOn) ? 'none' : '';
     });
     updateNoteBoxState();
     updateCitationPlacement();
