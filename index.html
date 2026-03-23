@@ -12254,7 +12254,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
     const s = readSettingsFromPanel();
     return {
       colors: Array.from(owned).sort(),
-      view: document.body.classList.contains('preview-selected-only') ? 'preview' : 'normal',
+      view: 'preview',
       fit: s.fit,
       paper: s.paper,
       names: s.showNames ? '1' : '0',
@@ -12357,7 +12357,7 @@ panel.querySelectorAll('#cmTitleBold,#cmGroupTitleBold,#cmCodeBold')
       });
       applyPrintVisibility();
     }
-    if(params.get('view') === 'preview'){
+    if(isShareLocked || params.get('view') === 'preview'){
       document.body.classList.add('preview-selected-only');
       document.body.classList.add('show-selected-only');
       refreshGroups();
@@ -12514,6 +12514,10 @@ function updateMultiColumnsControlState(settings){
   let isShareLocked = false;
   function applyShareLockUI(){
     document.body.classList.toggle('cm-share-locked', !!isShareLocked);
+    if(isShareLocked){
+      document.body.classList.add('preview-selected-only');
+      document.body.classList.add('show-selected-only');
+    }
     if(panel){
       panel.classList.toggle('is-share-locked', !!isShareLocked);
       panel.style.display = isShareLocked ? 'none' : '';
@@ -12522,6 +12526,9 @@ function updateMultiColumnsControlState(settings){
       el.style.display = isShareLocked ? 'none' : '';
     });
     document.querySelectorAll('.cm-inline-group-actions').forEach(function(el){
+      el.style.display = isShareLocked ? 'none' : '';
+    });
+    document.querySelectorAll('.cm-inline-check').forEach(function(el){
       el.style.display = isShareLocked ? 'none' : '';
     });
   }
